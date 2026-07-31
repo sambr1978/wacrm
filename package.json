@@ -28,7 +28,7 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -71,6 +71,7 @@
     "eslint-config-next": "16.2.6",
     "prettier": "^3.9.5",
     "prettier-plugin-tailwindcss": "^0.8.0",
+    "supabase": "^2.110.0",
     "tailwindcss": "^4",
     "typescript": "^6",
     "vitest": "^4.1.10"
