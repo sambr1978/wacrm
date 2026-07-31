@@ -7,6 +7,10 @@ import { PipelineBoard } from "@/components/pipelines/pipeline-board";
 import { PipelineSettings } from "@/components/pipelines/pipeline-settings";
 import { DealForm } from "@/components/pipelines/deal-form";
 import { PipelineAnalytics } from "@/components/pipelines/pipeline-analytics";
+import {
+  FollowUpWorkspace,
+  type FollowUpCreateInput,
+} from "@/components/pipelines/follow-up-workspace";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -30,6 +34,7 @@ import { useCan } from "@/hooks/use-can";
 import { useAuth } from "@/hooks/use-auth";
 import { GatedButton } from "@/components/ui/gated-button";
 import { useTranslations } from "next-intl";
+import type { Contact, Conversation, FollowUp } from "@/types";
 
 // Pipeline creation is admin-class (settings-tier write under
 // the new RLS); deal creation is operational and only requires
@@ -45,17 +50,23 @@ const SPEC_DEFAULT_STAGES = [
   { name: "Won", color: "#22c55e", position: 4 }, // green
 ];
 
+type ContactWithConversations = Contact & {
+  conversations?: Pick<Conversation, "id" | "last_message_at" | "status">[];
+};
+
 export default function PipelinesPage() {
   const t = useTranslations("Pipelines.page");
   const supabase = createClient();
   const canEditSettings = useCan("edit-settings");
   const canCreateDeals = useCan("send-messages");
-  const { accountId } = useAuth();
+  const { accountId, profile } = useAuth();
 
   const [pipelines, setPipelines] = useState<Pipeline[]>([]);
   const [selectedPipelineId, setSelectedPipelineId] = useState<string>("");
   const [stages, setStages] = useState<PipelineStage[]>([]);
   const [deals, setDeals] = useState<Deal[]>([]);
+  const [followUps, setFollowUps] = useState<FollowUp[]>([]);
+  const [contacts, setContacts] = useState<ContactWithConversations[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Dialog / sheet state
@@ -101,13 +112,44 @@ export default function PipelinesPage() {
     async (pipelineId: string) => {
       const { data } = await supabase
         .from("deals")
-        .select("*, contact:contacts(*), assignee:profiles!deals_assigned_to_fkey(*)")
+        .select("*, contact:contacts(*), company:companies(*), assignee:profiles!deals_assigned_to_fkey(*)")
         .eq("pipeline_id", pipelineId)
         .order("created_at", { ascending: false });
       return (data ?? []) as Deal[];
     },
     [supabase],
   );
+
+  const loadFollowUps = useCallback(async () => {
+    if (!accountId) return [];
+    const { data, error } = await supabase
+      .from("follow_ups")
+      .select(
+        "*, contact:contacts(*), company:companies(*), deal:deals(*), assignee:profiles!follow_ups_assigned_to_fkey(*)",
+      )
+      .eq("account_id", accountId)
+      .order("due_at", { ascending: true });
+    if (error) {
+      console.error("Failed to load follow-ups:", error.message);
+      return [];
+    }
+    return (data ?? []) as FollowUp[];
+  }, [supabase, accountId]);
+
+  const loadContacts = useCallback(async () => {
+    if (!accountId) return [];
+    const { data, error } = await supabase
+      .from("contacts")
+      .select("*, company_record:companies(*), conversations(id,last_message_at,status)")
+      .eq("account_id", accountId)
+      .order("updated_at", { ascending: false })
+      .limit(200);
+    if (error) {
+      console.error("Failed to load contacts:", error.message);
+      return [];
+    }
+    return (data ?? []) as ContactWithConversations[];
+  }, [supabase, accountId]);
 
   const seedDefaultPipeline = useCallback(async (): Promise<Pipeline | null> => {
     const {
@@ -177,24 +219,28 @@ export default function PipelinesPage() {
     if (!selectedPipelineId) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setStages([]);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDeals([]);
+      setFollowUps([]);
       return;
     }
     let cancelled = false;
     (async () => {
-      const [s, d] = await Promise.all([
+      const [s, d, f, c] = await Promise.all([
         loadStages(selectedPipelineId),
         loadDeals(selectedPipelineId),
+        loadFollowUps(),
+        loadContacts(),
       ]);
       if (cancelled) return;
       setStages(s);
       setDeals(d);
+      setFollowUps(f);
+      setContacts(c);
     })();
     return () => {
       cancelled = true;
     };
-  }, [selectedPipelineId, loadStages, loadDeals]);
+  }, [selectedPipelineId, loadStages, loadDeals, loadFollowUps, loadContacts]);
 
   const refreshPipelines = useCallback(async () => {
     const list = await loadPipelines();
@@ -213,6 +259,14 @@ export default function PipelinesPage() {
     if (!selectedPipelineId) return;
     setDeals(await loadDeals(selectedPipelineId));
   }, [loadDeals, selectedPipelineId]);
+
+  const refreshFollowUps = useCallback(async () => {
+    setFollowUps(await loadFollowUps());
+  }, [loadFollowUps]);
+
+  const refreshContacts = useCallback(async () => {
+    setContacts(await loadContacts());
+  }, [loadContacts]);
 
   const handleDealMoved = useCallback(
     async (dealId: string, newStageId: string) => {
@@ -246,6 +300,167 @@ export default function PipelinesPage() {
     setDefaultStageId(deal.stage_id);
     setDealFormOpen(true);
   }, []);
+
+  const handleCreateFollowUp = useCallback(
+    async (input: FollowUpCreateInput) => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const user = session?.user;
+      if (!user || !accountId) {
+        toast.error(t("toastNotLinkedToAccount"));
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("follow_ups")
+        .insert({
+          ...input,
+          user_id: user.id,
+          account_id: accountId,
+          status: "pending",
+          is_primary: true,
+        })
+        .select()
+        .single();
+
+      if (error || !data) {
+        toast.error(t("toastFailedCreateFollowUp"));
+        return;
+      }
+
+      await supabase.from("follow_up_events").insert({
+        account_id: accountId,
+        follow_up_id: data.id,
+        actor_profile_id: profile?.id ?? null,
+        event_type: "created",
+        to_status: "pending",
+        to_due_at: input.due_at,
+        note: input.note,
+      });
+
+      toast.success(t("toastFollowUpCreated"));
+      await refreshFollowUps();
+    },
+    [supabase, accountId, profile?.id, refreshFollowUps, t],
+  );
+
+  const handleCompleteFollowUp = useCallback(
+    async (followUp: FollowUp, result: string, decision: string) => {
+      const completedAt = new Date().toISOString();
+      const { error } = await supabase
+        .from("follow_ups")
+        .update({
+          status: "completed",
+          result: result || null,
+          completed_at: completedAt,
+          completed_by: profile?.id ?? null,
+        })
+        .eq("id", followUp.id);
+      if (error) {
+        toast.error(t("toastFailedUpdateFollowUp"));
+        return;
+      }
+      if (accountId) {
+        await supabase.from("follow_up_events").insert({
+          account_id: accountId,
+          follow_up_id: followUp.id,
+          actor_profile_id: profile?.id ?? null,
+          event_type: "completed",
+          from_status: followUp.status,
+          to_status: "completed",
+          decision,
+          result: result || null,
+        });
+      }
+      toast.success(t("toastFollowUpCompleted"));
+      await refreshFollowUps();
+    },
+    [supabase, accountId, profile?.id, refreshFollowUps, t],
+  );
+
+  const handleRescheduleFollowUp = useCallback(
+    async (followUp: FollowUp, dueAt: string) => {
+      const { error } = await supabase
+        .from("follow_ups")
+        .update({ status: "rescheduled" })
+        .eq("id", followUp.id);
+      if (error) {
+        toast.error(t("toastFailedUpdateFollowUp"));
+        return;
+      }
+
+      const { error: createError } = await supabase.from("follow_ups").insert({
+        account_id: followUp.account_id,
+        user_id: followUp.user_id,
+        contact_id: followUp.contact_id,
+        deal_id: followUp.deal_id,
+        conversation_id: followUp.conversation_id,
+        company_id: followUp.company_id ?? null,
+        assigned_to: followUp.assigned_to,
+        activity_type: followUp.activity_type,
+        channel: followUp.channel,
+        priority: followUp.priority,
+        due_at: dueAt,
+        note: followUp.note,
+        status: "pending",
+        is_primary: followUp.is_primary,
+        rescheduled_from_id: followUp.id,
+      });
+
+      if (createError) {
+        await supabase
+          .from("follow_ups")
+          .update({ status: "pending" })
+          .eq("id", followUp.id);
+        toast.error(t("toastFailedUpdateFollowUp"));
+        return;
+      }
+
+      if (accountId) {
+        await supabase.from("follow_up_events").insert({
+          account_id: accountId,
+          follow_up_id: followUp.id,
+          actor_profile_id: profile?.id ?? null,
+          event_type: "rescheduled",
+          from_status: followUp.status,
+          to_status: "rescheduled",
+          from_due_at: followUp.due_at,
+          to_due_at: dueAt,
+        });
+      }
+      toast.success(t("toastFollowUpRescheduled"));
+      await refreshFollowUps();
+    },
+    [supabase, accountId, profile?.id, refreshFollowUps, t],
+  );
+
+  const handleCancelFollowUp = useCallback(
+    async (followUp: FollowUp, result: string) => {
+      const { error } = await supabase
+        .from("follow_ups")
+        .update({ status: "cancelled", result: result || null })
+        .eq("id", followUp.id);
+      if (error) {
+        toast.error(t("toastFailedUpdateFollowUp"));
+        return;
+      }
+      if (accountId) {
+        await supabase.from("follow_up_events").insert({
+          account_id: accountId,
+          follow_up_id: followUp.id,
+          actor_profile_id: profile?.id ?? null,
+          event_type: "cancelled",
+          from_status: followUp.status,
+          to_status: "cancelled",
+          result: result || null,
+        });
+      }
+      toast.success(t("toastFollowUpCancelled"));
+      await refreshFollowUps();
+    },
+    [supabase, accountId, profile?.id, refreshFollowUps, t],
+  );
 
   async function handleCreatePipeline() {
     const name = newPipelineName.trim();
@@ -413,9 +628,19 @@ export default function PipelinesPage() {
       ) : (
         <>
           <PipelineAnalytics stages={stages} deals={deals} />
+          <FollowUpWorkspace
+            deals={deals}
+            contacts={contacts}
+            followUps={followUps}
+            onCreateFollowUp={handleCreateFollowUp}
+            onCompleteFollowUp={handleCompleteFollowUp}
+            onRescheduleFollowUp={handleRescheduleFollowUp}
+            onCancelFollowUp={handleCancelFollowUp}
+          />
           <PipelineBoard
             stages={stages}
             deals={deals}
+            followUps={followUps}
             onDealMoved={handleDealMoved}
             onAddDeal={handleAddDeal}
             onEditDeal={handleEditDeal}
@@ -487,7 +712,11 @@ export default function PipelinesPage() {
         pipelineId={selectedPipelineId}
         stages={stages}
         defaultStageId={defaultStageId}
-        onSaved={refreshDeals}
+        onSaved={async () => {
+          await refreshDeals();
+          await refreshFollowUps();
+          await refreshContacts();
+        }}
       />
     </div>
   );

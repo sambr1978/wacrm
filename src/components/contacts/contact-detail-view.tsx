@@ -6,7 +6,8 @@ import { addContactTag, deleteContactTag } from '@/lib/contacts/tag-api';
 import { useAuth } from '@/hooks/use-auth';
 import { formatCurrency } from '@/lib/currency';
 import { toast } from 'sonner';
-import type { Contact, Tag, ContactTag, ContactNote, CustomField, ContactCustomValue, Deal, MessageTemplate } from '@/types';
+import type { Company, Contact, ContactCommercialRole, Tag, ContactNote, CustomField, ContactCustomValue, Deal, MessageTemplate } from '@/types';
+import { buildCompanyDisplayName } from '@/lib/companies';
 import {
   TemplatePicker,
   type TemplateSendValues,
@@ -73,8 +74,13 @@ export function ContactDetailView({
   const [editName, setEditName] = useState('');
   const [editPhone, setEditPhone] = useState('');
   const [editEmail, setEditEmail] = useState('');
-  const [editCompany, setEditCompany] = useState('');
+  const [editCompanyId, setEditCompanyId] = useState('');
+  const [editNewCompanyName, setEditNewCompanyName] = useState('');
+  const [editJobTitle, setEditJobTitle] = useState('');
+  const [editCommercialRole, setEditCommercialRole] = useState<ContactCommercialRole | ''>('');
+  const [editIsPrimaryCompanyContact, setEditIsPrimaryCompanyContact] = useState(false);
   const [savingDetails, setSavingDetails] = useState(false);
+  const [companies, setCompanies] = useState<Company[]>([]);
 
   // Tags tab
   const [allTags, setAllTags] = useState<Tag[]>([]);
@@ -103,7 +109,7 @@ export function ContactDetailView({
 
     const { data } = await supabase
       .from('contacts')
-      .select('*')
+      .select('*, company_record:companies(*)')
       .eq('id', contactId)
       .single();
 
@@ -112,10 +118,25 @@ export function ContactDetailView({
       setEditName(data.name ?? '');
       setEditPhone(data.phone);
       setEditEmail(data.email ?? '');
-      setEditCompany(data.company ?? '');
+      setEditCompanyId(data.company_id ?? '');
+      setEditNewCompanyName(data.company && !data.company_id ? data.company : '');
+      setEditJobTitle(data.job_title ?? '');
+      setEditCommercialRole(data.commercial_role ?? '');
+      setEditIsPrimaryCompanyContact(data.is_primary_company_contact ?? false);
     }
     setLoading(false);
   }, [contactId, supabase]);
+
+  const fetchCompanies = useCallback(async () => {
+    if (!accountId) return;
+    const { data } = await supabase
+      .from('companies')
+      .select('*')
+      .eq('account_id', accountId)
+      .is('archived_at', null)
+      .order('trade_name');
+    setCompanies((data ?? []) as Company[]);
+  }, [accountId, supabase]);
 
   const fetchTags = useCallback(async () => {
     if (!contactId) return;
@@ -183,12 +204,13 @@ export function ContactDetailView({
   useEffect(() => {
     if (open && contactId) {
       fetchContact();
+      fetchCompanies();
       fetchTags();
       fetchNotes();
       fetchCustomFields();
       fetchDeals();
     }
-  }, [open, contactId, fetchContact, fetchTags, fetchNotes, fetchCustomFields, fetchDeals]);
+  }, [open, contactId, fetchContact, fetchCompanies, fetchTags, fetchNotes, fetchCustomFields, fetchDeals]);
 
   async function copyPhone() {
     if (!contact) return;
@@ -204,13 +226,52 @@ export function ContactDetailView({
     }
 
     setSavingDetails(true);
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const user = session?.user;
+    if (!user || !accountId) {
+      toast.error(t('toastNotAuthenticated'));
+      setSavingDetails(false);
+      return;
+    }
+
+    let resolvedCompanyId = editCompanyId || null;
+    let legacyCompanyName =
+      companies.find((company) => company.id === resolvedCompanyId)?.trade_name ||
+      editNewCompanyName.trim() ||
+      null;
+
+    if (!resolvedCompanyId && editNewCompanyName.trim()) {
+      const { data: company, error: companyError } = await supabase
+        .from('companies')
+        .insert({
+          account_id: accountId,
+          user_id: user.id,
+          trade_name: editNewCompanyName.trim(),
+        })
+        .select('*')
+        .single();
+      if (companyError || !company) {
+        toast.error(t('toastUpdateFailed'));
+        setSavingDetails(false);
+        return;
+      }
+      resolvedCompanyId = company.id;
+      legacyCompanyName = buildCompanyDisplayName(company as Company);
+    }
+
     const { error } = await supabase
       .from('contacts')
       .update({
         name: editName.trim() || null,
         phone: editPhone.trim(),
         email: editEmail.trim() || null,
-        company: editCompany.trim() || null,
+        company: legacyCompanyName,
+        company_id: resolvedCompanyId,
+        job_title: editJobTitle.trim() || null,
+        commercial_role: editCommercialRole || null,
+        is_primary_company_contact: !!resolvedCompanyId && editIsPrimaryCompanyContact,
         updated_at: new Date().toISOString(),
       })
       .eq('id', contactId);
@@ -423,10 +484,12 @@ export function ContactDetailView({
                         {contact.email}
                       </span>
                     )}
-                    {contact.company && (
+                    {(contact.company_record || contact.company) && (
                       <span className="flex items-center gap-1">
                         <Building2 className="size-3" />
-                        {contact.company}
+                        {contact.company_record
+                          ? buildCompanyDisplayName(contact.company_record)
+                          : contact.company}
                       </span>
                     )}
                   </div>
@@ -515,12 +578,65 @@ export function ContactDetailView({
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-muted-foreground text-xs">{t('company')}</Label>
+                    <select
+                      value={editCompanyId}
+                      onChange={(e) => {
+                        setEditCompanyId(e.target.value);
+                        if (e.target.value) setEditNewCompanyName('');
+                      }}
+                      className="h-8 w-full rounded-lg border border-border bg-muted px-2.5 text-sm text-foreground outline-none focus:border-primary"
+                    >
+                      <option value="">{t('noCompany')}</option>
+                      {companies.map((company) => (
+                        <option key={company.id} value={company.id}>
+                          {buildCompanyDisplayName(company)}
+                        </option>
+                      ))}
+                    </select>
                     <Input
-                      value={editCompany}
-                      onChange={(e) => setEditCompany(e.target.value)}
+                      value={editNewCompanyName}
+                      onChange={(e) => {
+                        setEditNewCompanyName(e.target.value);
+                        if (e.target.value.trim()) setEditCompanyId('');
+                      }}
+                      placeholder={t('newCompanyPlaceholder')}
                       className="bg-muted border-border text-foreground h-8 text-sm"
                     />
                   </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1.5">
+                      <Label className="text-muted-foreground text-xs">{t('jobTitle')}</Label>
+                      <Input
+                        value={editJobTitle}
+                        onChange={(e) => setEditJobTitle(e.target.value)}
+                        className="bg-muted border-border text-foreground h-8 text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-muted-foreground text-xs">{t('commercialRole')}</Label>
+                      <select
+                        value={editCommercialRole}
+                        onChange={(e) => setEditCommercialRole(e.target.value as ContactCommercialRole | '')}
+                        className="h-8 w-full rounded-lg border border-border bg-muted px-2.5 text-sm text-foreground outline-none focus:border-primary"
+                      >
+                        <option value="">{t('commercialRoles.none')}</option>
+                        <option value="buyer">{t('commercialRoles.buyer')}</option>
+                        <option value="decision_maker">{t('commercialRoles.decision_maker')}</option>
+                        <option value="finance">{t('commercialRoles.finance')}</option>
+                        <option value="technical_user">{t('commercialRoles.technical_user')}</option>
+                        <option value="other">{t('commercialRoles.other')}</option>
+                      </select>
+                    </div>
+                  </div>
+                  <label className="flex items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
+                    <input
+                      type="checkbox"
+                      checked={editIsPrimaryCompanyContact}
+                      onChange={(e) => setEditIsPrimaryCompanyContact(e.target.checked)}
+                      disabled={!editCompanyId && !editNewCompanyName.trim()}
+                    />
+                    {t('primaryCompanyContact')}
+                  </label>
                   <Button
                     onClick={saveDetails}
                     disabled={savingDetails}

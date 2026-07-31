@@ -15,7 +15,7 @@ import { addContactTagAndDispatch } from '@/lib/contacts/tag-events';
 import { sanitizePhoneForMeta, isValidE164 } from '@/lib/whatsapp/phone-utils';
 
 /** Row select that embeds the contact's tags for serialization. */
-export const CONTACT_SELECT = '*, contact_tags(tags(*))';
+export const CONTACT_SELECT = '*, company_record:companies(*), contact_tags(tags(*))';
 
 export interface ApiContact {
   id: string;
@@ -23,6 +23,13 @@ export interface ApiContact {
   name: string | null;
   email: string | null;
   company: string | null;
+  company_id: string | null;
+  company_record: {
+    id: string;
+    trade_name: string;
+    legal_name: string | null;
+    commercial_status: string;
+  } | null;
   avatar_url: string | null;
   tags: { id: string; name: string; color: string }[];
   created_at: string;
@@ -44,12 +51,28 @@ type RawTagJoin = { tags: { id: string; name: string; color: string } | null };
 /** Flatten a `CONTACT_SELECT` row into the public contact shape. */
 export function serializeContact(row: Record<string, unknown>): ApiContact {
   const joins = (row.contact_tags as RawTagJoin[] | undefined) ?? [];
+  const company = row.company_record as
+    | { id: string; trade_name: string; legal_name: string | null; commercial_status: string }
+    | null
+    | undefined;
+  const linkedCompanyName = company
+    ? (company.trade_name || company.legal_name || '').trim() || null
+    : null;
   return {
     id: row.id as string,
     phone: row.phone as string,
     name: (row.name as string | null) ?? null,
     email: (row.email as string | null) ?? null,
-    company: (row.company as string | null) ?? null,
+    company: linkedCompanyName ?? (row.company as string | null) ?? null,
+    company_id: (row.company_id as string | null) ?? null,
+    company_record: company
+      ? {
+          id: company.id,
+          trade_name: company.trade_name,
+          legal_name: company.legal_name,
+          commercial_status: company.commercial_status,
+        }
+      : null,
     avatar_url: (row.avatar_url as string | null) ?? null,
     tags: joins
       .map((j) => j.tags)
@@ -99,6 +122,7 @@ export interface ContactInput {
   name?: string | null;
   email?: string | null;
   company?: string | null;
+  company_id?: string | null;
 }
 
 /**
@@ -133,6 +157,7 @@ export async function findOrCreateContact(
       name: input.name ?? sanitized,
       email: input.email ?? null,
       company: input.company ?? null,
+      company_id: input.company_id ?? null,
     })
     .select('id')
     .single();

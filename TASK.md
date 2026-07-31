@@ -2,73 +2,623 @@
 
 ## Project
 
-wacrm is a fork of the open-source `ArnasDon/wacrm` WhatsApp CRM template. It is a self-hostable Next.js 16 + Supabase CRM with shared inbox, contacts, pipelines, broadcasts, automations, flows, AI replies, account sharing, public API, and MCP support.
+WACRM is a fork of the open-source `ArnasDon/wacrm` WhatsApp CRM template. It is a self-hostable Next.js 16 + Supabase CRM with shared inbox, contacts, pipelines, broadcasts, automations, flows, AI replies, account sharing, public API, and MCP support.
 
 ## Current Objective
 
-Implement the first localization batch only:
+Advance the company-centered CRM foundation after completing the relational stabilization phase.
 
-- create `messages/pt-BR.json` with the same key structure as `messages/en.json`;
-- translate existing dictionary values into Brazilian Portuguese;
-- configure local default locale through `NEXT_PUBLIC_APP_LOCALE=pt-BR`;
-- document the locale variable in the environment example;
-- do not modify React components, routes, APIs, business rules, database schema, Supabase migrations, RLS, roles, service-role code, persisted data, commits, or pushes.
+The next increment should:
+
+1. fix tag-filtered contact queries/RPCs so they return `company_record` consistently;
+2. add automated tests for CSV company import idempotency and legacy upgrade scenarios;
+3. define and implement the first operational Companies workspace;
+4. preserve compatibility with legacy `contacts.company` consumers while preventing conflicting writes.
+
+Do not deploy, push, commit, or run production migrations unless explicitly requested.
 
 ## Repository State
 
 - Repository: `/home/samuca/Documentos/projetos_ai/projetos/apps/wacrm`
 - Branch: `chore/setup-supabase`
 - Upstream lineage: `ArnasDon/wacrm`
-- Working tree at start: clean
-- Latest observed commit: `5f5ce5e configure Supabase local setup`
+- Latest company/follow-up work committed as a local checkpoint.
+- Existing full-suite failures remain limited to two pre-existing tests in `src/lib/dashboard/date-utils.test.ts`.
 
 ## Relevant Technical Context
 
-- Next.js 16 App Router; local `AGENTS.md` requires reading `node_modules/next/dist/docs/` before Next code changes.
-- React 19, TypeScript 6, Tailwind v4, shadcn-style UI primitives, lucide icons.
-- Supabase Auth, Postgres, Storage, Realtime, RLS, service-role admin clients for trusted backend paths.
-- Existing i18n uses `next-intl` via `src/i18n/request.ts`, `NextIntlClientProvider`, `messages/en.json`, and `messages/ko.json`.
-- Locale is currently selected by `NEXT_PUBLIC_APP_LOCALE`, not by URL routing.
+- Next.js 16 App Router.
+- React 19.
+- TypeScript 6.
+- Tailwind CSS v4.
+- shadcn-style UI primitives.
+- Lucide icons.
+- Supabase Auth, Postgres, Storage, Realtime, RLS, and service-role clients for trusted backend paths.
+- Existing i18n uses `next-intl` through `src/i18n/request.ts`, `NextIntlClientProvider`, and locale dictionaries.
+- Locale is selected by `NEXT_PUBLIC_APP_LOCALE`, not URL routing.
+- Local `AGENTS.md` requires reading `node_modules/next/dist/docs/` before Next.js code changes.
 
 ## Completed Work
 
-- Created `messages/pt-BR.json` from the `messages/en.json` structure.
-- Translated all existing dictionary values into Brazilian Portuguese while preserving technical terms such as `WhatsApp`, `Meta`, `API`, `URL`, `Email`, `Dashboard`, `Inbox`, `Pipelines`, `Template`, `Tags`, `Admin`, and machine-like examples/placeholders where appropriate.
-- Compared `messages/en.json` and `messages/ko.json` before creation:
-  - `en.json`: 1428 leaf keys.
-  - `ko.json`: 1426 leaf keys.
-  - `ko.json` is missing `Contacts.detailView.tabs.tags` and `Settings.sections.quick-replies`.
-  - No extra KO keys and no type mismatches.
-- Configured `.env.local` with `NEXT_PUBLIC_APP_LOCALE=pt-BR`.
-- Documented `NEXT_PUBLIC_APP_LOCALE` in `.env.local.example` and set the example default to `pt-BR`.
+### 1. Brazilian Portuguese localization
+
+- Created `messages/pt-BR.json` using the structure of `messages/en.json`.
+- Preserved technical terms such as `WhatsApp`, `Meta`, `API`, `URL`, `Email`, `Dashboard`, `Inbox`, `Pipelines`, `Template`, `Tags`, and `Admin`.
+- Configured `.env.local` with:
+
+```env
+NEXT_PUBLIC_APP_LOCALE=pt-BR
+```
+
+- Documented `NEXT_PUBLIC_APP_LOCALE` in `.env.local.example`.
 - Preserved `messages/en.json` and `messages/ko.json`.
 
-## Confirmed Decisions
+### 2. Commercial follow-up foundation
 
-- Do not modify React components or application logic in this batch.
-- Prefer centralized i18n translation structure over manual string replacement.
-- Preserve upstream core where possible; use additive files and thin wrapper/customization layers.
+Implemented the first operational follow-up batch for Pipelines.
 
-## Constraints
+#### Database
 
-- Do not deploy, push, commit, or run production migrations.
-- Do not expose `.env` values or secrets.
-- Preserve fork updateability.
-- Keep code/config files in English unless explicitly requested otherwise.
+Added:
 
-## Validation
+```text
+supabase/migrations/20260731032242_commercial_follow_ups.sql
+```
 
-- `messages/pt-BR.json` validation:
-  - 1428 leaf keys.
-  - No missing keys versus `messages/en.json`.
-  - No extra keys versus `messages/en.json`.
-  - No type mismatches.
-- Placeholder/tag validation completed. Remaining differences are expected translated ICU plural text, not missing interpolation variables.
-- `npm run lint`: passed with exit 0; existing warnings remain.
-- `npm run typecheck`: passed with exit 0.
-- `npm run test`: failed with 2 existing failures in `src/lib/dashboard/date-utils.test.ts` (`mondayIndex` Monday/Sunday mapping and label alignment); 646 tests passed.
-- `npm run build`: passed with exit 0.
+The migration introduced:
+
+- `deals.closed_reason`;
+- `deals.closed_at`;
+- `follow_ups`;
+- `follow_up_events`;
+- account-scoped RLS;
+- context links to contacts, deals, and conversations;
+- activity type;
+- channel;
+- priority;
+- due date;
+- owner;
+- lifecycle status;
+- result;
+- completion metadata;
+- reschedule relationships;
+- indexes;
+- one-active-primary constraints;
+- update triggers;
+- event history.
+
+#### Application
+
+Added or updated:
+
+- shared follow-up types in `src/types/index.ts`;
+- follow-up rules and centralized configuration in `src/lib/follow-ups.ts`;
+- focused tests in `src/lib/follow-ups.test.ts`;
+- `src/components/pipelines/follow-up-workspace.tsx`;
+- pipeline agenda buckets;
+- overdue, today, and upcoming views;
+- no-next-action view;
+- reactivation candidates;
+- create, complete, reschedule, and cancel actions;
+- follow-up event history;
+- next-action and no-next-action indicators on deal cards;
+- i18n keys in English, Brazilian Portuguese, and Korean.
+
+#### Confirmed behavior
+
+- Pipeline cards continue to represent deals/opportunities, not companies.
+- Follow-up buckets `overdue`, `today`, and `upcoming` are derived from `due_at`.
+- Persisted follow-up statuses remain lifecycle states:
+  - `pending`;
+  - `completed`;
+  - `cancelled`;
+  - `rescheduled`.
+- No automatic customer messages were added.
+- No fake purchase or order data was created.
+- Purchase-based indicators remain unavailable until a real source is integrated.
+
+### 3. Companies as a central commercial entity
+
+Implemented the first relational Companies batch.
+
+#### Database
+
+Added:
+
+```text
+supabase/migrations/20260731033925_companies.sql
+```
+
+Created `companies` with:
+
+- `account_id`;
+- legal name;
+- trade name;
+- normalized name;
+- tax ID;
+- commercial status;
+- segment;
+- website;
+- primary phone;
+- primary email;
+- address fields;
+- owner/responsible references;
+- notes;
+- archive timestamp;
+- creation/update timestamps;
+- indexes;
+- update trigger;
+- RLS;
+- no client-side hard-delete policy.
+
+Added:
+
+- `company_id` to `contacts`;
+- `company_id` to `deals`;
+- `company_id` to `follow_ups`;
+- `job_title` to contacts;
+- `commercial_role` to contacts;
+- `is_primary_company_contact` to contacts.
+
+Added database protections for:
+
+- cross-account company assignments;
+- one primary contact per company;
+- automatic cleanup of primary-contact state when `company_id` is removed;
+- synchronization of `contacts.company` from the linked company;
+- synchronization after company rename;
+- company-scoped follow-ups;
+- account-aware relationships.
+
+#### Backfill
+
+The migration:
+
+- creates companies from distinct non-empty legacy `contacts.company` values;
+- normalizes case, accents, punctuation, and spacing;
+- deduplicates safe variants within the same account;
+- does not merge similar but distinct names;
+- keeps homonymous companies separate across accounts;
+- links contacts when matching is unambiguous;
+- backfills `deals.company_id` and `follow_ups.company_id` from their contacts.
+
+#### Application
+
+Added:
+
+- `src/lib/companies.ts`;
+- `src/lib/companies.test.ts`;
+- shared `Company` types;
+- shared commercial status types;
+- shared contact commercial-role types;
+- company selection/creation in contact create/edit/detail flows;
+- company support in CSV contact import;
+- company context in pipeline and follow-up loading;
+- company context in deal creation;
+- additive API v1 support for:
+  - `company_id`;
+  - `company_record`;
+- preservation of the legacy `company` string contract;
+- new i18n keys in English, Brazilian Portuguese, and Korean.
+
+## Stabilization Results
+
+### Root cause of local Supabase failures
+
+The original `LegacyDbConnectError` was caused by inconsistent local Supabase state.
+
+The CLI expected:
+
+```text
+supabase_db_wacrm
+```
+
+but the database container was missing or unavailable.
+
+A second issue appeared during recovery:
+
+- Fedora SELinux was in `Enforcing`;
+- the local Supabase secret path had the wrong context;
+- Postgres could not read `pgsodium_root.key`;
+- the container looped with:
+
+```text
+FATAL: invalid secret key
+```
+
+### Local environment recovery
+
+Recovery used Podman, not remote Supabase.
+
+Actions performed:
+
+- corrected the SELinux label of the local Supabase secret to `container_file_t`;
+- removed the broken local database container and volume;
+- enabled `podman.socket`;
+- used Docker-compatible Podman access with:
+
+```bash
+DOCKER_HOST=unix:///run/user/1000/podman/podman.sock
+```
+
+Database-only validation works with:
+
+```bash
+npx supabase start   --exclude gotrue,realtime,storage-api,imgproxy,kong,mailpit,postgrest,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+```
+
+Full `supabase start` remains limited in this environment because some non-database services still attempt to use:
+
+```text
+/var/run/docker.sock
+```
+
+This does not block local database migration validation.
+
+### Empty database validation
+
+Validated successfully:
+
+- all migrations applied from zero;
+- migration order is correct;
+- `20260731032242_commercial_follow_ups.sql` applies before `20260731033925_companies.sql`;
+- company schema objects were created successfully;
+- no old migration files were modified.
+
+### Legacy upgrade validation
+
+Validated successfully:
+
+1. reset the local database to `20260731032242`;
+2. inserted representative legacy fixtures;
+3. applied only `20260731033925_companies.sql`;
+4. verified upgrade behavior.
+
+Fixtures included:
+
+- contacts without companies;
+- blank company values;
+- case variants;
+- accent variants;
+- punctuation variants;
+- spacing variants;
+- similar but distinct company names;
+- homonymous companies across accounts;
+- an existing deal;
+- an existing follow-up.
+
+Confirmed:
+
+- safe variants deduplicate in the same account;
+- similar but distinct companies are not merged;
+- homonymous companies remain separate across accounts;
+- linked deals inherit `company_id`;
+- linked follow-ups inherit `company_id`;
+- legacy contacts remain preserved.
+
+### SQL fixes found through real execution
+
+The company migration was corrected after actual local execution.
+
+Fixes included:
+
+- replaced invalid `min(user_id)` over UUID with deterministic:
+
+```sql
+(array_agg(user_id ORDER BY created_at, id))[1]
+```
+
+- replaced ambiguous `ON CONFLICT DO NOTHING` against a partial unique index with `WHERE NOT EXISTS`;
+- corrected normalization so punctuation-generated trailing spaces are removed;
+- corrected backfill linking to count distinct candidate companies rather than contact rows;
+- added explicit grants;
+- added account-aware relational constraints;
+- added triggers for legacy projection and rename synchronization;
+- added database invariants for primary contacts.
+
+### Account isolation
+
+Validated that cross-account links are rejected for:
+
+- contacts;
+- deals;
+- follow-ups.
+
+Confirmed zero cross-account links after backfill.
+
+### RLS and grants
+
+Validated locally:
+
+- authenticated members cannot read another account's companies;
+- same-account authorized users can insert and update companies;
+- cross-account inserts are blocked;
+- client-side delete is blocked;
+- company removal remains archive-oriented;
+- `anon` and `PUBLIC` do not have grants on `companies`;
+- `authenticated` has `SELECT`, `INSERT`, and `UPDATE`;
+- `service_role` has operational access.
+
+Supabase advisors returned no warnings related to `companies`.
+
+### Primary company contact
+
+Validated:
+
+- a contact without `company_id` cannot remain primary;
+- only one primary contact can exist per company;
+- removing `company_id` clears the primary flag;
+- removing `company_id` clears legacy `contacts.company`;
+- renaming a company updates legacy `contacts.company` for linked contacts.
+
+### Source of truth
+
+Confirmed:
+
+```text
+company_id = source of truth
+contacts.company = temporary compatibility projection
+```
+
+New internal flows must use `company_id`.
+
+The legacy string remains temporarily for:
+
+- API compatibility;
+- broadcasts;
+- flows;
+- automations;
+- Inbox compatibility;
+- existing contact-field consumers.
+
+These surfaces must not independently overwrite company identity when a relational company exists.
+
+## Confirmed Architecture Decisions
+
+- `companies` is a central commercial entity.
+- Companies do not replace contacts.
+- Companies do not replace opportunities.
+- Pipeline cards remain deals.
+- A company may have zero, one, or many deals.
+- A contact may have zero or one primary company.
+- No many-to-many contact-company model exists yet.
+- Conversations remain contact-centered.
+- Company pages may aggregate related conversations later without changing message ownership.
+- `company_id` is the relational source of truth.
+- `contacts.company` is temporary compatibility data.
+- Commercial status belongs to `companies.commercial_status`.
+- Customer status must not be inferred merely from contact existence.
+- No purchase metrics should appear until a real order/purchase source exists.
+- Companies use logical archiving through `archived_at`.
+- No client-side hard-delete flow should be introduced.
+- Existing upstream architecture should remain updateable through additive changes and thin integration layers.
+
+## Current Known Limitations
+
+### 1. Tag-filtered contact queries
+
+The normal contact query includes `company_record`, but the tag-filtered RPC/list path may still return only the legacy company string.
+
+Required correction:
+
+- return `company_id`;
+- return legacy `company`;
+- return relational `company_record`;
+- preserve account isolation;
+- preserve pagination and filtering behavior.
+
+### 2. CSV import automated coverage
+
+CSV import currently normalizes and reuses companies within the current account.
+
+Still missing:
+
+- dedicated automated reimport test;
+- explicit idempotency test;
+- ambiguous company-case test;
+- partial failure test;
+- archived-company behavior test.
+
+### 3. Legacy compatibility surfaces
+
+The following still depend on `contacts.company`:
+
+- Inbox filters;
+- contact sidebar;
+- broadcast personalization;
+- flows;
+- automation contact fields;
+- some embedded contact payloads.
+
+This is currently accepted as compatibility behavior.
+
+These surfaces may remain temporarily provided:
+
+- relational `company_id` remains authoritative;
+- the legacy value is projected from the linked company;
+- new code does not write conflicting text independently;
+- future migration work is documented.
+
+### 4. Full Supabase local stack
+
+Database-only validation works.
+
+Full local Supabase startup still has a Podman/Docker socket incompatibility for some non-database services.
+
+This is an environment limitation, not a database migration failure.
+
+### 5. Existing test failures
+
+The full test suite still has two pre-existing failures in:
+
+```text
+src/lib/dashboard/date-utils.test.ts
+```
+
+They concern Monday-index and Sunday-label mapping.
+
+These failures predate the company/follow-up work and are not treated as regressions from this batch.
+
+## Latest Validation Snapshot
+
+### Application
+
+```text
+Focused tests:
+npm run test -- src/lib/companies.test.ts src/lib/api/v1/contacts.test.ts src/lib/follow-ups.test.ts
+Result: passed, 15 tests
+```
+
+```text
+npm run lint
+Result: passed, 37 warnings, 0 errors
+```
+
+```text
+npm run typecheck
+Result: passed
+```
+
+```text
+npm run build
+Result: passed
+```
+
+```text
+npm run test
+Result: 658 passed, 2 pre-existing failures
+```
+
+### Database
+
+```text
+Empty database migration application:
+Passed
+```
+
+```text
+Legacy upgrade migration:
+Passed
+```
+
+```text
+npx supabase db lint --local
+Result: passed with 1 pre-existing warning
+```
+
+The remaining warning is in:
+
+```text
+public.transfer_account_ownership
+```
+
+for an unused variable:
+
+```text
+v_target_role
+```
+
+```text
+npx supabase db advisors --local
+Result: no advisor findings related to companies
+```
+
+### Localization
+
+- `messages/pt-BR.json` has no missing or extra keys compared with `messages/en.json`.
+- `messages/ko.json` retains two pre-existing missing keys:
+  - `Contacts.detailView.tabs.tags`;
+  - `Settings.sections.quick-replies`.
+- No new company or follow-up translation gaps were introduced.
 
 ## Next Exact Action
 
-Stop after this first localization batch. If approved later, begin Phase 2 from `docs/customization-plan.md`: migrate high-visibility hardcoded auth, shell, navigation, invitation, and settings-section strings into the centralized dictionaries.
+Execute a small technical closure phase before or together with the first Companies workspace.
+
+### Priority 1 — Contact query consistency
+
+Upgrade tag-filtered contact queries/RPCs so all contact list paths return consistently:
+
+- `company_id`;
+- `company`;
+- `company_record`.
+
+`company_record` must come from the relational company entity.
+
+### Priority 2 — CSV import tests
+
+Add automated coverage for:
+
+- company creation;
+- company reuse;
+- normalization;
+- same-file duplicates;
+- reimport;
+- same company name across different accounts;
+- blank company;
+- archived company;
+- ambiguous matches;
+- partial failures.
+
+Do not invent new contact deduplication rules without evidence from the current project.
+
+### Priority 3 — First Companies workspace
+
+A dedicated Companies UI may now proceed.
+
+The MVP must be operational, not merely a CRUD.
+
+It should answer:
+
+1. Who is this company?
+2. Which contacts belong to it?
+3. Which opportunities are open?
+4. What is the next action?
+
+Recommended initial scope:
+
+- Companies menu item;
+- companies list;
+- search and commercial filters;
+- create company;
+- edit company;
+- archive and restore company;
+- company detail;
+- linked contacts;
+- primary contact;
+- linked deals;
+- company follow-ups;
+- existing activities;
+- create contact from company;
+- create deal from company;
+- create follow-up from company.
+
+Do not include yet:
+
+- fake purchases;
+- days since last purchase;
+- automatic customer scoring;
+- automatic reactivation classification;
+- broad Inbox refactoring;
+- complete omnichannel timeline;
+- many-to-many company-contact relationships.
+
+### Priority 4 — Legacy migration map
+
+Keep a documented list of remaining `contacts.company` consumers.
+
+They may stay temporarily as compatibility-only surfaces, but they must not become new sources of truth.
+
+## Constraints
+
+- Do not expose `.env` values or secrets.
+- Do not alter already-applied migrations.
+- Do not remove the public API v1 `company` string.
+- Do not create many-to-many contact-company relations without a proven need.
+- Do not create duplicate companies for case, accent, punctuation, or spacing variants.
+- Do not invent purchase/order data.
+- Do not add automatic follow-up messages in the current phase.
+- Preserve account-scoped access and role boundaries.
+- Preserve fork updateability.
+- Keep code and configuration files in English unless explicitly requested otherwise.
+- Do not deploy, push, commit, or run production migrations unless explicitly requested.

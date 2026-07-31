@@ -57,6 +57,7 @@ import { CustomFieldsManager } from '@/components/contacts/custom-fields-manager
 import { useCan } from '@/hooks/use-can';
 import { GatedButton } from '@/components/ui/gated-button';
 import { useTranslations } from 'next-intl';
+import { buildCompanyDisplayName } from '@/lib/companies';
 
 const PAGE_SIZE = 25;
 
@@ -156,7 +157,7 @@ export default function ContactsPage() {
     } else {
       let query = supabase
         .from('contacts')
-        .select('*', { count: 'exact' })
+        .select('*, company_record:companies(*)', { count: 'exact' })
         .order('created_at', { ascending: false })
         .range(from, to);
 
@@ -172,7 +173,7 @@ export default function ContactsPage() {
         setLoading(false);
         return;
       }
-      contactRows = data ?? [];
+      contactRows = (data ?? []) as Contact[];
       count = exactCount ?? 0;
     }
 
@@ -610,7 +611,9 @@ export default function ContactsPage() {
                     {contact.email || <span className="text-muted-foreground">-</span>}
                   </TableCell>
                   <TableCell className="text-muted-foreground hidden lg:table-cell text-sm">
-                    {contact.company || <span className="text-muted-foreground">-</span>}
+                    {contact.company_record
+                      ? buildCompanyDisplayName(contact.company_record)
+                      : contact.company || <span className="text-muted-foreground">-</span>}
                   </TableCell>
                   <TableCell className="hidden md:table-cell">
                     <div className="flex flex-wrap gap-1">

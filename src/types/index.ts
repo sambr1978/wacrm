@@ -107,12 +107,59 @@ export interface Contact {
   name?: string;
   email?: string;
   company?: string;
+  company_id?: string | null;
+  job_title?: string | null;
+  commercial_role?: ContactCommercialRole | null;
+  is_primary_company_contact?: boolean;
   avatar_url?: string;
   created_at: string;
   updated_at: string;
   /** Hydrated by queries that embed `contact_tags(tags(*))` (e.g. the
    *  Inbox conversation list, for tag filtering). Absent otherwise. */
   tags?: Tag[];
+  company_record?: Company | null;
+}
+
+export type ContactCommercialRole =
+  | 'buyer'
+  | 'decision_maker'
+  | 'finance'
+  | 'technical_user'
+  | 'other';
+
+export type CompanyCommercialStatus =
+  | 'prospect'
+  | 'active_customer'
+  | 'at_risk'
+  | 'inactive'
+  | 'reactivated'
+  | 'archived';
+
+export interface Company {
+  id: string;
+  account_id: string;
+  user_id: string;
+  legal_name: string | null;
+  trade_name: string;
+  normalized_name: string;
+  tax_id: string | null;
+  commercial_status: CompanyCommercialStatus;
+  segment: string | null;
+  website: string | null;
+  primary_phone: string | null;
+  general_email: string | null;
+  address_line1: string | null;
+  address_line2: string | null;
+  city: string | null;
+  region: string | null;
+  postal_code: string | null;
+  country: string | null;
+  assigned_to: string | null;
+  notes: string | null;
+  archived_at: string | null;
+  created_at: string;
+  updated_at: string;
+  assignee?: Profile | null;
 }
 
 export interface Tag {
@@ -338,6 +385,7 @@ export interface MessageTemplate {
 export interface Pipeline {
   id: string;
   user_id: string;
+  account_id?: string;
   name: string;
   created_at: string;
 }
@@ -353,9 +401,93 @@ export interface PipelineStage {
 
 export type DealStatus = 'open' | 'won' | 'lost';
 
+export type FollowUpActivityType =
+  | 'whatsapp'
+  | 'phone'
+  | 'email'
+  | 'meeting'
+  | 'proposal'
+  | 'agreed_return'
+  | 'post_sale'
+  | 'rebuy'
+  | 'reactivation'
+  | 'internal_note';
+
+export type FollowUpChannel =
+  | 'whatsapp'
+  | 'phone'
+  | 'email'
+  | 'meeting'
+  | 'internal'
+  | 'other';
+
+export type FollowUpPriority = 'low' | 'normal' | 'high' | 'urgent';
+export type FollowUpStatus = 'pending' | 'completed' | 'cancelled' | 'rescheduled';
+export type FollowUpBucket =
+  | 'overdue'
+  | 'today'
+  | 'upcoming'
+  | 'completed'
+  | 'cancelled'
+  | 'rescheduled';
+
+export interface FollowUp {
+  id: string;
+  account_id: string;
+  user_id: string;
+  contact_id: string | null;
+  company_id?: string | null;
+  deal_id: string | null;
+  conversation_id: string | null;
+  assigned_to: string | null;
+  activity_type: FollowUpActivityType;
+  channel: FollowUpChannel;
+  priority: FollowUpPriority;
+  status: FollowUpStatus;
+  due_at: string;
+  note: string | null;
+  result: string | null;
+  completed_at: string | null;
+  completed_by: string | null;
+  rescheduled_from_id: string | null;
+  is_primary: boolean;
+  created_at: string;
+  updated_at: string;
+  contact?: Contact | null;
+  company?: Company | null;
+  deal?: Deal | null;
+  assignee?: Profile | null;
+}
+
+export type FollowUpEventType =
+  | 'created'
+  | 'completed'
+  | 'cancelled'
+  | 'rescheduled'
+  | 'reopened'
+  | 'decision'
+  | 'note';
+
+export interface FollowUpEvent {
+  id: string;
+  account_id: string;
+  follow_up_id: string;
+  actor_profile_id: string | null;
+  event_type: FollowUpEventType;
+  from_status: FollowUpStatus | null;
+  to_status: FollowUpStatus | null;
+  from_due_at: string | null;
+  to_due_at: string | null;
+  decision: string | null;
+  note: string | null;
+  result: string | null;
+  created_at: string;
+}
+
 export interface Deal {
   id: string;
   user_id: string;
+  account_id?: string;
   pipeline_id: string;
   stage_id: string;
   /**
@@ -363,19 +495,24 @@ export interface Deal {
    * contact is deleted (ON DELETE SET NULL). History preserved.
    */
   contact_id: string | null;
-  conversation_id?: string;
-  assigned_to?: string;
+  company_id?: string | null;
+  conversation_id?: string | null;
+  assigned_to?: string | null;
   title: string;
   value: number;
-  currency?: string;
-  notes?: string;
-  expected_close_date?: string;
+  currency?: string | null;
+  notes?: string | null;
+  expected_close_date?: string | null;
   status?: DealStatus;
+  closed_reason?: string | null;
+  closed_at?: string | null;
   created_at: string;
   updated_at?: string;
   contact?: Contact;
+  company?: Company | null;
   stage?: PipelineStage;
   assignee?: Profile;
+  follow_ups?: FollowUp[];
 }
 
 export type BroadcastStatus = 'draft' | 'scheduled' | 'sending' | 'sent' | 'failed';

@@ -18,6 +18,7 @@ import {
   type ContactTagAssignment,
 } from '@/lib/contacts/resolve-import-tags';
 import { cn } from '@/lib/utils';
+import { normalizeCompanyName } from '@/lib/companies';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -263,6 +264,41 @@ export function ImportModal({
       }
 
       const tagAssignments: ContactTagAssignment[] = [];
+      const companyIdByKey = new Map<string, string>();
+      const companyNameByKey = new Map<string, string>();
+
+      const companyNames = toInsert
+        .map((row) => row.company?.trim())
+        .filter((name): name is string => !!name);
+      for (const name of companyNames) {
+        const key = normalizeCompanyName(name);
+        if (!key) continue;
+        if (!companyNameByKey.has(key)) companyNameByKey.set(key, name);
+      }
+
+      if (companyNameByKey.size > 0) {
+        const { data: existingCompanies } = await supabase
+          .from('companies')
+          .select('id, normalized_name')
+          .eq('account_id', accountId)
+          .is('archived_at', null);
+        for (const company of existingCompanies ?? []) {
+          companyIdByKey.set(company.normalized_name, company.id);
+        }
+        for (const [key, name] of companyNameByKey) {
+          if (companyIdByKey.has(key)) continue;
+          const { data: created } = await supabase
+            .from('companies')
+            .insert({
+              account_id: accountId,
+              user_id: user.id,
+              trade_name: name,
+            })
+            .select('id')
+            .single();
+          if (created?.id) companyIdByKey.set(key, created.id);
+        }
+      }
 
       // 4) Batch insert the genuinely-new rows in chunks of 50. The DB
       //    unique index is the backstop: a 23505 (race, or a format
@@ -278,6 +314,9 @@ export function ImportModal({
           name: row.name || null,
           email: row.email || null,
           company: row.company || null,
+          company_id: row.company
+            ? companyIdByKey.get(normalizeCompanyName(row.company)) ?? null
+            : null,
         }));
 
         const { data, error } = await supabase

@@ -163,6 +163,7 @@ export function DealForm({
       value: parseFloat(value) || 0,
       currency,
       contact_id: contactId,
+      company_id: contacts.find((contact) => contact.id === contactId)?.company_id ?? null,
       pipeline_id: pipelineId,
       stage_id: stageId,
       assigned_to: assignedTo || null,
