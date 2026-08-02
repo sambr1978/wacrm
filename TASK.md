@@ -10,10 +10,8 @@ Advance the company-centered CRM foundation after completing the relational stab
 
 The next increment should:
 
-1. fix tag-filtered contact queries/RPCs so they return `company_record` consistently;
-2. add automated tests for CSV company import idempotency and legacy upgrade scenarios;
-3. define and implement the first operational Companies workspace;
-4. preserve compatibility with legacy `contacts.company` consumers while preventing conflicting writes.
+1. define and implement the first operational Companies workspace;
+2. preserve compatibility with legacy `contacts.company` consumers while preventing conflicting writes.
 
 Do not deploy, push, commit, or run production migrations unless explicitly requested.
 
@@ -461,6 +459,175 @@ These failures predate the company/follow-up work and are not treated as regress
 
 ## Latest Validation Snapshot
 
+### 2026-08-02 state analysis
+
+Revalidated the current repository state without code changes.
+
+```text
+npm run typecheck
+Result: passed
+```
+
+```text
+npm run lint
+Result: passed, 37 warnings, 0 errors
+```
+
+```text
+npm run build
+Result: passed
+```
+
+```text
+npm run test -- src/lib/companies.test.ts src/lib/api/v1/contacts.test.ts src/lib/follow-ups.test.ts
+Result: passed, 15 tests
+```
+
+```text
+npm run test
+Result: 658 passed, 2 pre-existing failures in src/lib/dashboard/date-utils.test.ts
+```
+
+### 2026-08-02 tag-filtered contact consistency
+
+Completed Priority 1 for contact query consistency.
+
+Added:
+
+- `supabase/migrations/20260802000100_filter_contacts_by_tags_company_record.sql`;
+- `src/lib/contacts/tag-filtered-rpc.ts`;
+- `src/lib/contacts/tag-filtered-rpc.test.ts`.
+
+Updated:
+
+- `src/app/(dashboard)/contacts/page.tsx`.
+
+The tag-filtered contacts RPC now returns a JSONB contact payload with:
+
+- `company_id`;
+- legacy `company`;
+- relational `company_record`.
+
+The normal contact list path and tag-filtered list path now share the same company display contract in the frontend.
+
+Validation:
+
+```text
+npm run test -- src/lib/contacts/tag-filtered-rpc.test.ts src/lib/companies.test.ts src/lib/api/v1/contacts.test.ts src/lib/follow-ups.test.ts
+Result: passed, 17 tests
+```
+
+```text
+npm run typecheck
+Result: passed
+```
+
+```text
+npm run lint
+Result: passed, 37 warnings, 0 errors
+```
+
+```text
+npm run build
+Result: passed
+```
+
+```text
+npm run test
+Result: 660 passed, 2 pre-existing failures in src/lib/dashboard/date-utils.test.ts
+```
+
+Local Supabase migration validation was attempted with database-only startup, but the local container remained blocked by:
+
+```text
+FATAL: invalid secret key
+/etc/postgresql-custom/pgsodium_root.key: Read-only file system
+```
+
+No local reset, volume removal, production migration, commit, push, or deployment was performed.
+
+### 2026-08-02 CSV import Companies coverage
+
+Completed the CSV contact import coverage phase for Companies without migrations, UI screens, deployment, commit, or push.
+
+Audited before changing:
+
+- `src/components/contacts/import-modal.tsx`;
+- `src/lib/contacts/parse-contact-csv.ts`;
+- `src/lib/contacts/dedupe.ts`;
+- `src/lib/contacts/resolve-import-tags.ts`;
+- `src/lib/companies.ts`;
+- existing nearby tests for CSV parsing, dedupe, tags, and company normalization.
+
+Changed files:
+
+- `src/lib/contacts/import-contacts-with-companies.ts`;
+- `src/lib/contacts/import-contacts-with-companies.test.ts`;
+- `src/components/contacts/import-modal.tsx`;
+- `TASK.md`.
+
+Implementation:
+
+- extracted the operational contact/company import flow from the React modal into `importContactsWithCompanies`;
+- kept existing contact dedupe semantics through `dedupeByPhone`, `normalizeKey`, and DB unique-violation fallback;
+- preserved the modal's tag flow, using returned inserted contact/source pairs for tag assignment;
+- kept `company_id` as the authoritative relational link;
+- preserved legacy `contacts.company` projection data in inserted rows.
+
+Covered cases:
+
+- new company creation;
+- active company reuse;
+- normalization across case, accents, punctuation, and repeated spaces;
+- reimport of the same file without duplicate contacts or companies;
+- duplicate rows in the same file;
+- same company name in different accounts;
+- contact without company;
+- archived company not reused;
+- ambiguous active company match keeps legacy `company` text but avoids `company_id`;
+- partial batch failure retries valid rows individually;
+- `company_id` remains the source of truth for linked imports;
+- `contacts.company` remains compatible legacy text.
+
+Limitations:
+
+- tests use an in-memory Supabase-like fake focused on the import queries and side effects, not a live Postgres/Supabase instance;
+- local Supabase DB validation was not repeated for this phase because no migrations were changed and prior local DB startup is blocked by the documented `pgsodium_root.key` issue;
+- tag auto-creation and tag assignment remain covered by their existing helper flow and were not expanded in this Companies-specific pass;
+- ambiguous company matching is covered as a defensive inconsistent-query scenario; normal database constraints should prevent duplicate active `normalized_name` rows per account.
+
+Validation:
+
+```text
+npm run test -- src/lib/contacts/import-contacts-with-companies.test.ts src/lib/contacts/parse-contact-csv.test.ts src/lib/contacts/dedupe.test.ts src/lib/companies.test.ts
+Result: passed, 29 tests
+```
+
+```text
+npm run typecheck
+Result: passed
+```
+
+```text
+npm run lint
+Result: passed, 37 warnings, 0 errors
+```
+
+```text
+npm run build
+Result: passed
+```
+
+```text
+npm run test
+Result: 668 passed, 2 pre-existing failures in src/lib/dashboard/date-utils.test.ts
+```
+
+Pre-existing full-suite failures remain:
+
+- `src/lib/dashboard/date-utils.test.ts` — `mondayIndex` maps Monday to `6` instead of expected `0`;
+- `src/lib/dashboard/date-utils.test.ts` — `DOW_SHORT_MON_FIRST[mondayIndex(...)]` resolves to `Sun` instead of expected `Mon`.
+
 ### Application
 
 ```text
@@ -533,36 +700,9 @@ Result: no advisor findings related to companies
 
 ## Next Exact Action
 
-Execute a small technical closure phase before or together with the first Companies workspace.
+Proceed to the first operational Companies workspace.
 
-### Priority 1 — Contact query consistency
-
-Upgrade tag-filtered contact queries/RPCs so all contact list paths return consistently:
-
-- `company_id`;
-- `company`;
-- `company_record`.
-
-`company_record` must come from the relational company entity.
-
-### Priority 2 — CSV import tests
-
-Add automated coverage for:
-
-- company creation;
-- company reuse;
-- normalization;
-- same-file duplicates;
-- reimport;
-- same company name across different accounts;
-- blank company;
-- archived company;
-- ambiguous matches;
-- partial failures.
-
-Do not invent new contact deduplication rules without evidence from the current project.
-
-### Priority 3 — First Companies workspace
+### Priority 1 — First Companies workspace
 
 A dedicated Companies UI may now proceed.
 
@@ -603,7 +743,7 @@ Do not include yet:
 - complete omnichannel timeline;
 - many-to-many company-contact relationships.
 
-### Priority 4 — Legacy migration map
+### Priority 2 — Legacy migration map
 
 Keep a documented list of remaining `contacts.company` consumers.
 

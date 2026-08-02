@@ -58,6 +58,10 @@ import { useCan } from '@/hooks/use-can';
 import { GatedButton } from '@/components/ui/gated-button';
 import { useTranslations } from 'next-intl';
 import { buildCompanyDisplayName } from '@/lib/companies';
+import {
+  parseTagFilteredContactRows,
+  type TagFilteredContactRow,
+} from '@/lib/contacts/tag-filtered-rpc';
 
 const PAGE_SIZE = 25;
 
@@ -151,9 +155,9 @@ export default function ContactsPage() {
         setLoading(false);
         return;
       }
-      const rows = (data ?? []) as { contact: Contact; total_count: number }[];
-      contactRows = rows.map((r) => r.contact);
-      count = rows.length > 0 ? Number(rows[0].total_count) : 0;
+      const parsed = parseTagFilteredContactRows(data as TagFilteredContactRow[] | null);
+      contactRows = parsed.contacts;
+      count = parsed.totalCount;
     } else {
       let query = supabase
         .from('contacts')
