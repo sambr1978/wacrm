@@ -22,16 +22,23 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "wacrm",
-    template: "%s — wacrm",
+    default: "Conversa CRM",
+    template: "%s — Conversa CRM",
   },
-  description: "Self-hostable CRM template for WhatsApp.",
+  description: "CRM para conversas, relacionamento e resultados.",
+  openGraph: {
+    title: "Conversa CRM",
+    description: "CRM para conversas, relacionamento e resultados.",
+    siteName: "Conversa",
+    type: "website",
+  },
   robots: {
     index: false,
     follow: false,
   },
   icons: {
-    icon: [{ url: "/icon" }],
+    icon: [{ url: "/icon.png" }],
+    apple: [{ url: "/apple-icon.png" }],
   },
   formatDetection: {
     email: false,

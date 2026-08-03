@@ -228,3 +228,15 @@ html[data-theme="rose"] {
     @apply font-sans;
   }
 }
+
+.brand-asset-dark {
+  display: none;
+}
+
+html[data-mode="dark"] .brand-asset-light {
+  display: none;
+}
+
+html[data-mode="dark"] .brand-asset-dark {
+  display: block;
+}

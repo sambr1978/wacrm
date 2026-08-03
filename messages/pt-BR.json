@@ -15,7 +15,7 @@
     "createAccount": "Criar conta"
   },
   "Sidebar": {
-    "title": "CRM Template para WhatsApp",
+    "title": "Conversa CRM",
     "dashboard": "Dashboard",
     "inbox": "Inbox",
     "notifications": "Notificações",
@@ -38,7 +38,8 @@
     "defaultAvatar": "Avatar",
     "menuProfile": "Perfil",
     "menuSettings": "Configurações",
-    "menuSignOut": "Sair"
+    "menuSignOut": "Sair",
+    "companies": "Empresas"
   },
   "Header": {
     "dashboard": "Dashboard",
@@ -55,7 +56,8 @@
     "defaultAvatar": "Avatar",
     "menuProfile": "Perfil",
     "menuSettings": "Configurações",
-    "menuSignOut": "Sair"
+    "menuSignOut": "Sair",
+    "companies": "Empresas"
   },
   "ModeToggle": {
     "switchMode": "Mudar para o modo {mode}"
@@ -1373,7 +1375,7 @@
       "labelTooLong": "O rótulo precisa ter caracteres {max} ou menos",
       "copied": "Link de convite copiado",
       "clipboardBlocked": "Área de transferência bloqueada – copie o link manualmente",
-      "whatsappMessage": "Junte-se a {accountName} no wacrm usando este link (válido para dias {expiresInDays}): {url}"
+      "whatsappMessage": "Junte-se a {accountName} no Conversa usando este link (válido por {expiresInDays} dias): {url}"
     },
     "tagsAndFields": {
       "title": "Campos e tags",
@@ -1484,8 +1486,8 @@
       "saveResubmit": "Salvar e reenviar",
       "submitApproval": "Enviar para aprovação",
       "deleteDialogTitle": "Excluir template?",
-      "deleteMetaDesc": "\"{name}\" será excluído do Meta e do wacrm. As disparos ativas que usam este template começarão a falhar no próximo envio. Isso não pode ser desfeito.",
-      "deleteLocalDesc": "\"{name}\" será excluído do wacrm. Ele nunca foi enviado ao Meta, portanto, nenhuma limpeza remota é necessária.",
+      "deleteMetaDesc": "\"{name}\" será excluído do Meta e do Conversa. As disparos ativas que usam este template começarão a falhar no próximo envio. Isso não pode ser desfeito.",
+      "deleteLocalDesc": "\"{name}\" será excluído do Conversa. Ele nunca foi enviado ao Meta, portanto, nenhuma limpeza remota é necessária.",
       "deleting": "Excluindo…",
       "delete": "Excluir",
       "toastLoadFailed": "Falha ao carregar templates",
@@ -1526,7 +1528,7 @@
       "notConnected": "Não conectado",
       "connectedDesc": "Seu token de acesso é autenticado com Meta. Consulte o status do registro abaixo para saber se os webhooks estão realmente conectados.",
       "notConnectedDesc": "Configure suas credenciais Meta API abaixo para conectar sua conta do WhatsApp Business.",
-      "registered": "Registrado – Meta entregará eventos ao wacrm",
+      "registered": "Registrado – Meta entregará eventos ao Conversa",
       "notRegistered": "Não registrado – Meta não entregará eventos",
       "verifyWithMeta": "Verifique com Meta",
       "subscribedSince": "Assinado desde {date}. Clique em Verificar com Meta se os eventos pararem de chegar.",
@@ -1550,7 +1552,7 @@
       "twoStepPin": "PIN de verificação em duas etapas",
       "optional": "(opcional)",
       "pinPlaceholder": "PIN de 6 dígitos do Meta WhatsApp Manager",
-      "pinHint": "Necessário apenas para transferir mensagens de entrada para um número de produção. Defina-o em Meta Business Manager → Contas do WhatsApp → Números de telefone → Verificação em duas etapas e cole-o aqui para que o wacrm possa assinar o número – caso contrário, o Meta roteia eventos de entrada para o aplicativo que o reivindicou pela última vez (o sintoma que atinge os segundos números em um WABA compartilhado). Os números de metateste não têm PIN e são pré-registrados – deixe em branco para eles. Deixá-lo em branco também mantém um registro existente intacto.",
+      "pinHint": "Necessário apenas para transferir mensagens de entrada para um número de produção. Defina-o em Meta Business Manager → Contas do WhatsApp → Números de telefone → Verificação em duas etapas e cole-o aqui para que o Conversa possa assinar o número – caso contrário, o Meta roteia eventos de entrada para o aplicativo que o reivindicou pela última vez (o sintoma que atinge os segundos números em um WABA compartilhado). Os números de metateste não têm PIN e são pré-registrados – deixe em branco para eles. Deixá-lo em branco também mantém um registro existente intacto.",
       "webhookTitle": "Configuração de webhook",
       "webhookDesc": "Use este URL como retorno de chamada do webhook no Meta App Dashboard.",
       "webhookUrl": "URL de retorno de chamada do webhook",
@@ -1715,7 +1717,7 @@
     },
     "aiConfig": {
       "title": "Configuração do agente",
-      "description": "Traga sua própria chave OpenAI ou Antrópica. O wacrm liga para o provedor diretamente com sua chave – sem taxas de IA por assento e seus dados permanecem seus. Isso fornece respostas elaboradas por IA na caixa de entrada, no bot de resposta automática e no Playground.",
+      "description": "Traga sua própria chave OpenAI ou Antrópica. O Conversa chama o provedor diretamente com sua chave – sem taxas de IA por assento e seus dados permanecem seus. Isso fornece respostas elaboradas por IA na caixa de entrada, no bot de resposta automática e no Playground.",
       "adminOnlyConfig": "Somente administradores e proprietários podem alterar a configuração do AI.",
       "loadFailed": "Falha ao carregar a configuração do AI",
       "providerAndKey": "Provedor e chave",
@@ -1779,6 +1781,233 @@
       "reindex": "Reindexar",
       "reindexTooltip": "Incorpore novamente todos os documentos (por exemplo, após adicionar uma chave de incorporação)",
       "loading": "Carregando…"
+    }
+  },
+  "Companies": {
+    "common": {
+      "back": "Voltar",
+      "cancel": "Cancelar",
+      "save": "Salvar",
+      "archive": "Arquivar",
+      "restore": "Restaurar",
+      "loading": "Carregando...",
+      "notSet": "Não informado",
+      "unassigned": "Sem responsável",
+      "statuses": {
+        "all": "Todos os status",
+        "prospect": "Prospect",
+        "active_customer": "Cliente ativo",
+        "at_risk": "Em risco",
+        "inactive": "Inativo",
+        "reactivated": "Reativado",
+        "archived": "Arquivado",
+        "pending": "pendente",
+        "completed": "concluído",
+        "cancelled": "cancelado",
+        "rescheduled": "reagendado",
+        "open": "aberto",
+        "won": "ganho",
+        "lost": "perdido"
+      }
+    },
+    "list": {
+      "title": "Empresas",
+      "subtitle": "Consolide contatos, oportunidades e follow-ups por empresa.",
+      "newCompany": "Nova empresa",
+      "searchPlaceholder": "Buscar por nome, CNPJ/ID fiscal, segmento, telefone ou email",
+      "filters": {
+        "allOwners": "Todos os responsáveis",
+        "allSegments": "Todos os segmentos",
+        "primaryContact": "Contato principal",
+        "withPrimary": "Com principal",
+        "withoutPrimary": "Sem principal",
+        "nextFollowUp": "Próximo follow-up",
+        "withNext": "Com próximo",
+        "withoutNext": "Sem próximo",
+        "active": "Ativas",
+        "archived": "Arquivadas",
+        "all": "Todas",
+        "overdue": "Atrasado"
+      },
+      "table": {
+        "company": "Empresa",
+        "status": "Status",
+        "primary": "Principal",
+        "owner": "Responsável",
+        "contacts": "Contatos",
+        "deals": "Oportunidades",
+        "nextAction": "Próxima ação"
+      },
+      "loading": "Carregando empresas...",
+      "emptyTitle": "Nenhuma empresa encontrada.",
+      "emptyDescription": "Ajuste os filtros ou crie a primeira empresa.",
+      "noSegment": "Sem segmento",
+      "archivedSuffix": "Arquivada",
+      "pending": "Pendente",
+      "openDeals": "{count} aberta(s)",
+      "noNextAction": "Sem próxima ação"
+    },
+    "form": {
+      "newTitle": "Nova empresa",
+      "editTitle": "Editar empresa",
+      "subtitle": "Mantenha o registro relacional da empresa como fonte de verdade comercial.",
+      "sections": {
+        "identity": "Identificação",
+        "channels": "Canais",
+        "address": "Endereço",
+        "notes": "Observações"
+      },
+      "fields": {
+        "tradeName": "Nome fantasia",
+        "legalName": "Razão social",
+        "taxId": "CNPJ/ID fiscal",
+        "commercialStatus": "Status comercial",
+        "segment": "Segmento",
+        "owner": "Responsável",
+        "primaryPhone": "Telefone principal",
+        "primaryEmail": "Email principal",
+        "website": "Website",
+        "addressLine1": "Endereço",
+        "addressLine2": "Complemento",
+        "city": "Cidade",
+        "region": "Estado/região",
+        "postalCode": "CEP/código postal",
+        "country": "País"
+      },
+      "toasts": {
+        "notFound": "Empresa não encontrada.",
+        "unauthenticated": "Usuário não autenticado.",
+        "updated": "Empresa atualizada.",
+        "created": "Empresa criada.",
+        "saveFailed": "Falha ao salvar a empresa.",
+        "archiveFailed": "Falha ao atualizar o arquivamento.",
+        "archived": "Empresa arquivada.",
+        "restored": "Empresa restaurada."
+      }
+    },
+    "detail": {
+      "areaFallback": "Área da empresa",
+      "archivedSuffix": "Arquivada",
+      "buttons": {
+        "contact": "Contato",
+        "deal": "Oportunidade",
+        "followUp": "Follow-up",
+        "edit": "Editar",
+        "linkExisting": "Vincular existente",
+        "complete": "Concluir",
+        "reschedule": "Reagendar"
+      },
+      "metrics": {
+        "contacts": "Contatos",
+        "openDeals": "Oportunidades abertas",
+        "nextFollowUp": "Próximo follow-up",
+        "overdue": "Atrasados",
+        "none": "Nenhum",
+        "needsAction": "Exige ação",
+        "onTrack": "Em dia"
+      },
+      "panels": {
+        "overview": "Visão geral",
+        "contacts": "Contatos",
+        "deals": "Oportunidades",
+        "followUps": "Follow-ups",
+        "activities": "Atividades"
+      },
+      "info": {
+        "status": "Status",
+        "segment": "Segmento",
+        "owner": "Responsável",
+        "taxId": "CNPJ/ID fiscal",
+        "phone": "Telefone",
+        "email": "Email",
+        "website": "Website",
+        "address": "Endereço",
+        "createdAt": "Criada em",
+        "notes": "Observações"
+      },
+      "contacts": {
+        "emptyTitle": "Nenhum contato vinculado",
+        "emptyDescription": "Crie ou vincule um contato para tornar esta empresa operacional.",
+        "primarySuffix": "Principal",
+        "noRole": "Sem cargo",
+        "undefinedRole": "papel não definido"
+      },
+      "deals": {
+        "emptyTitle": "Nenhuma oportunidade",
+        "emptyDescription": "Crie uma oportunidade vinculada a esta empresa quando houver uma negociação real.",
+        "undefinedStage": "Etapa não definida"
+      },
+      "followUps": {
+        "emptyTitle": "Nenhum follow-up",
+        "emptyDescription": "Agende a próxima ação para a empresa, um contato ou um deal.",
+        "companyScope": "Escopo da empresa",
+        "noNote": "Sem observação"
+      },
+      "activities": {
+        "origin": "Origem",
+        "company": "Empresa",
+        "emptyTitle": "Nenhuma atividade ainda",
+        "emptyDescription": "As atividades aparecem quando há follow-ups ou registros comerciais relacionados."
+      },
+      "prompts": {
+        "result": "Resultado",
+        "cancelReason": "Motivo do cancelamento",
+        "newDueDate": "Nova data do follow-up"
+      },
+      "dialogs": {
+        "linkContactTitle": "Vincular contato existente",
+        "chooseContact": "Escolha um contato",
+        "link": "Vincular",
+        "createDealTitle": "Criar oportunidade da empresa",
+        "title": "Título",
+        "pipeline": "Pipeline",
+        "choosePipeline": "Escolha um pipeline",
+        "stage": "Etapa",
+        "chooseStage": "Escolha uma etapa",
+        "contact": "Contato",
+        "noContact": "Sem contato",
+        "value": "Valor",
+        "createDeal": "Criar oportunidade",
+        "createFollowUpTitle": "Criar follow-up",
+        "dueAt": "Vencimento",
+        "deal": "Oportunidade",
+        "noDeal": "Sem oportunidade",
+        "owner": "Responsável",
+        "type": "Tipo",
+        "channel": "Canal",
+        "priority": "Prioridade",
+        "note": "Observação",
+        "createFollowUp": "Criar follow-up"
+      },
+      "options": {
+        "call": "Ligação",
+        "meeting": "Reunião",
+        "proposal": "Proposta",
+        "reactivation": "Reativação",
+        "other": "Outro",
+        "phone": "Telefone",
+        "internal": "Interno",
+        "low": "Baixa",
+        "normal": "Normal",
+        "high": "Alta",
+        "urgent": "Urgente"
+      },
+      "toasts": {
+        "notFound": "Empresa não encontrada.",
+        "updateFailed": "Falha ao atualizar a empresa.",
+        "archived": "Empresa arquivada.",
+        "restored": "Empresa restaurada.",
+        "contactWrongAccount": "O contato não pertence a esta conta.",
+        "linkContactFailed": "Falha ao vincular contato.",
+        "unlinkContactFailed": "Falha ao remover vínculo do contato.",
+        "primaryContactFailed": "Falha ao definir contato principal.",
+        "completeFollowUpFailed": "Falha ao concluir follow-up.",
+        "cancelFollowUpFailed": "Falha ao cancelar follow-up.",
+        "rescheduleFollowUpFailed": "Falha ao reagendar follow-up.",
+        "createDealFailed": "Falha ao criar deal.",
+        "selectedRecordWrongAccount": "O registro selecionado não pertence a esta conta.",
+        "createFollowUpFailed": "Falha ao criar follow-up."
+      }
     }
   }
 }

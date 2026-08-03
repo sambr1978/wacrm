@@ -15,7 +15,7 @@
     "createAccount": "계정 만들기"
   },
   "Sidebar": {
-    "title": "WhatsApp용 CRM 템플릿",
+    "title": "Conversa CRM",
     "dashboard": "대시보드",
     "inbox": "인박스",
     "notifications": "알림",
@@ -38,7 +38,8 @@
     "defaultAvatar": "아바타",
     "menuProfile": "프로필",
     "menuSettings": "설정",
-    "menuSignOut": "로그아웃"
+    "menuSignOut": "로그아웃",
+    "companies": "회사"
   },
   "Header": {
     "dashboard": "대시보드",
@@ -55,7 +56,8 @@
     "defaultAvatar": "아바타",
     "menuProfile": "프로필",
     "menuSettings": "설정",
-    "menuSignOut": "로그아웃"
+    "menuSignOut": "로그아웃",
+    "companies": "회사"
   },
   "ModeToggle": {
     "switchMode": "{mode} 모드로 전환"
@@ -1372,7 +1374,7 @@
       "labelTooLong": "라벨은 {max}자 이하여야 합니다",
       "copied": "초대 링크가 복사되었습니다",
       "clipboardBlocked": "클립보드 접근이 차단되었습니다 — 링크를 직접 복사하세요",
-      "whatsappMessage": "이 링크(유효 기간 {expiresInDays}일)로 wacrm의 {accountName}에 참여하세요: {url}"
+      "whatsappMessage": "이 링크(유효 기간 {expiresInDays}일)로 Conversa의 {accountName}에 참여하세요: {url}"
     },
     "tagsAndFields": {
       "title": "필드 & 태그",
@@ -1428,13 +1430,11 @@
       "deleteLocallyAria": "로컬에서 템플릿 삭제",
       "deleteMetaLocallyTitle": "Meta와 로컬에서 삭제",
       "deleteLocallyTitle": "로컬에서 삭제",
-
       "dialogEditTitle": "메시지 템플릿 수정",
       "dialogNewTitle": "새 메시지 템플릿",
       "dialogEditDesc": "변경 사항을 저장해 Meta에 재제출하세요. 검토 중에는 상태가 다시 대기 중으로 바뀝니다.",
       "dialogNewDesc": "템플릿을 만들어 Meta 승인을 요청하세요. 승인되면 브로드캐스트와 인박스에서 사용할 수 있습니다.",
       "authWarning": "AUTHENTICATION 템플릿은 본문과 OTP 버튼 형식이 고정되어 있어 별도의 빌더가 필요합니다. 지금은 Meta WhatsApp 관리자에서 만든 뒤 <bold>Meta에서 동기화</bold>로 가져오세요.",
-
       "templateName": "템플릿 이름",
       "namePlaceholder": "예: order_confirmation",
       "nameFixed": "템플릿이 Meta에 존재하면 이름이 고정됩니다 — 변경하려면 새 템플릿을 만드세요.",
@@ -1443,7 +1443,6 @@
       "language": "언어",
       "langFixed": "템플릿이 Meta에 존재하면 언어가 고정됩니다.",
       "langHint": "Meta의 정확한 코드와 일치해야 합니다 — <code>en_US</code>와 <code>en</code>은 다른 코드입니다.",
-
       "header": "헤더",
       "headerNone": "없음",
       "headerText": "텍스트",
@@ -1453,7 +1452,6 @@
       "headerTextPlaceholder": "헤더 텍스트 (최대 60자, {{1}} 선택 가능)",
       "headerSampleAria": "헤더 변수 샘플 값",
       "headerSamplePlaceholder": "{{1}}의 샘플 값 (Meta 검토에 필요)",
-
       "uploadImage": "이미지 업로드",
       "uploadHint": "JPEG 또는 PNG, 5MB 이하",
       "mediaUrlPlaceholder": "https://… (또는 공개 {format} 링크 붙여넣기)",
@@ -1461,17 +1459,14 @@
       "mediaHint": "공개적으로 접근 가능한 HTTPS 링크여야 합니다. Meta가 검토 중 한 번 가져오므로 약 24시간 동안 살아있어야 합니다.",
       "videoHint": " 권장: MP4 / 3GPP, 16MB 이하, 60초 이하.",
       "documentHint": " 권장: PDF, 100MB 이하.",
-
       "bodyText": "본문 텍스트",
       "bodyPlaceholder": "안녕하세요 {{1}}님, 주문 {{2}}이(가) 확정되었습니다.",
       "sampleValues": "샘플 값 (Meta가 템플릿 검토에 사용합니다)",
       "bodyHint": "변수에는 {{1}}, {{2}}를 사용하세요 ({{1}}부터 연속되어야 합니다).",
       "sampleAria": "본문 변수 {var}의 샘플 값",
       "samplePlaceholder": "{var}의 샘플",
-
       "footer": "푸터 (선택)",
       "footerPlaceholder": "선택적 푸터 텍스트 (최대 60자)",
-
       "buttons": "버튼 (선택)",
       "addButton": "버튼 추가",
       "buttonsLimit": "최대 {max}개 버튼. QUICK_REPLY 버튼은 URL / 전화 / 코드 복사 버튼보다 앞에 와야 합니다.",
@@ -1484,19 +1479,16 @@
       "urlSamplePlaceholder": "{{1}}의 예시 값 (URL에 변수가 있을 때 필요)",
       "phonePlaceholder": "+15551234567",
       "codePlaceholder": "예시 코드 (예: SUMMER20)",
-
       "cancel": "취소",
       "saving": "저장 중…",
       "submitting": "제출 중…",
       "saveResubmit": "저장 & 재제출",
       "submitApproval": "승인 요청",
-
       "deleteDialogTitle": "템플릿을 삭제하시겠습니까?",
-      "deleteMetaDesc": "\"{name}\"이(가) Meta와 wacrm에서 삭제됩니다. 이 템플릿을 사용하는 활성 브로드캐스트는 다음 전송부터 실패하기 시작합니다. 되돌릴 수 없습니다.",
-      "deleteLocalDesc": "\"{name}\"이(가) wacrm에서 삭제됩니다. Meta에 제출된 적이 없으므로 별도의 원격 정리가 필요하지 않습니다.",
+      "deleteMetaDesc": "\"{name}\"이(가) Meta와 Conversa에서 삭제됩니다. 이 템플릿을 사용하는 활성 브로드캐스트는 다음 전송부터 실패하기 시작합니다. 되돌릴 수 없습니다.",
+      "deleteLocalDesc": "\"{name}\"이(가) Conversa에서 삭제됩니다. Meta에 제출된 적이 없으므로 별도의 원격 정리가 필요하지 않습니다.",
       "deleting": "삭제 중…",
       "delete": "삭제",
-
       "toastLoadFailed": "템플릿을 불러오지 못했습니다",
       "toastSubmitFailed": "제출하지 못했습니다",
       "toastSubmitEditSuccess": "수정 사항이 제출되었습니다 — Meta는 보통 24시간 이내에 검토합니다.",
@@ -1535,7 +1527,7 @@
       "notConnected": "연결되지 않음",
       "connectedDesc": "액세스 토큰으로 Meta 인증이 완료되었습니다. 웹훅이 실제로 연결되었는지는 아래 등록 상태를 확인하세요.",
       "notConnectedDesc": "아래에서 Meta API 자격 증명을 설정해 WhatsApp 비즈니스 계정을 연결하세요.",
-      "registered": "등록됨 — Meta가 wacrm으로 이벤트를 전달합니다",
+      "registered": "등록됨 — Meta가 Conversa로 이벤트를 전달합니다",
       "notRegistered": "등록되지 않음 — Meta가 이벤트를 전달하지 않습니다",
       "verifyWithMeta": "Meta로 확인",
       "subscribedSince": "{date}부터 구독 중입니다. 이벤트가 더 이상 도착하지 않으면 Meta로 확인을 클릭하세요.",
@@ -1559,7 +1551,7 @@
       "twoStepPin": "2단계 인증 PIN",
       "optional": "(선택)",
       "pinPlaceholder": "Meta WhatsApp 관리자에서 발급받은 6자리 PIN",
-      "pinHint": "프로덕션 번호의 수신 메시지를 연결하려면 필요합니다. Meta 비즈니스 관리자 → WhatsApp 계정 → 전화번호 → 2단계 인증에서 설정한 뒤 여기에 붙여넣으면 wacrm이 해당 번호를 구독할 수 있습니다 — 그렇지 않으면 Meta는 마지막으로 이 번호를 등록한 앱으로 수신 이벤트를 보냅니다(공유 WABA 하의 두 번째 번호에서 흔히 발생하는 증상입니다). Meta 테스트 번호는 PIN이 없고 이미 등록되어 있으므로 이 필드를 비워두세요. 비워두면 기존 등록도 그대로 유지됩니다.",
+      "pinHint": "프로덕션 번호의 수신 메시지를 연결하려면 필요합니다. Meta 비즈니스 관리자 → WhatsApp 계정 → 전화번호 → 2단계 인증에서 설정한 뒤 여기에 붙여넣으면 Conversa가 해당 번호를 구독할 수 있습니다 — 그렇지 않으면 Meta는 마지막으로 이 번호를 등록한 앱으로 수신 이벤트를 보냅니다(공유 WABA 하의 두 번째 번호에서 흔히 발생하는 증상입니다). Meta 테스트 번호는 PIN이 없고 이미 등록되어 있으므로 이 필드를 비워두세요. 비워두면 기존 등록도 그대로 유지됩니다.",
       "webhookTitle": "웹훅 설정",
       "webhookDesc": "Meta 앱 대시보드의 웹훅 콜백으로 이 URL을 사용하세요.",
       "webhookUrl": "웹훅 콜백 URL",
@@ -1635,7 +1627,6 @@
       "profileSaved": "프로필이 저장되었습니다",
       "emailChangeFailed": "이메일 변경 실패: {message}",
       "profileSavedEmailCheck": "프로필이 저장되었습니다 — 이메일 주소 변경을 확인하려면 이메일을 확인하세요",
-
       "passwordTitle": "비밀번호",
       "passwordDesc": "최소 {min}자 이상 사용하세요. 변경 후에도 이 기기에서는 로그인이 유지됩니다.",
       "currentPassword": "현재 비밀번호",
@@ -1649,7 +1640,6 @@
       "currentPasswordIncorrect": "현재 비밀번호가 올바르지 않습니다",
       "passwordUpdateFailed": "비밀번호 업데이트 실패: {message}",
       "passwordUpdated": "비밀번호가 업데이트되었습니다",
-
       "sessionsTitle": "활성 세션",
       "sessionsDesc": "이 기기를 포함해 로그인되어 있는 모든 기기에서 로그아웃합니다. 노트북을 분실했거나 비밀번호를 공유한 경우 유용합니다.",
       "signOutAll": "모든 기기에서 로그아웃",
@@ -1725,7 +1715,7 @@
     },
     "aiConfig": {
       "title": "에이전트 설정",
-      "description": "직접 발급받은 OpenAI 또는 Anthropic 키를 사용하세요. wacrm은 회원님의 키로 공급자에 직접 요청하므로 좌석당 AI 비용이 없고 데이터도 온전히 회원님의 것입니다. 인박스의 AI 답장 초안, 자동 응답 봇, 플레이그라운드에 사용됩니다.",
+      "description": "직접 발급받은 OpenAI 또는 Anthropic 키를 사용하세요. Conversa는 회원님의 키로 공급자에 직접 요청하므로 좌석당 AI 비용이 없고 데이터도 온전히 회원님의 것입니다. 인박스의 AI 답장 초안, 자동 응답 봇, 플레이그라운드에 사용됩니다.",
       "adminOnlyConfig": "관리자와 소유자만 AI 설정을 변경할 수 있습니다.",
       "loadFailed": "AI 설정을 불러오지 못했습니다",
       "providerAndKey": "공급자 & 키",
@@ -1789,6 +1779,233 @@
       "reindex": "재색인",
       "reindexTooltip": "모든 문서를 다시 임베딩합니다 (예: 임베딩 키 추가 후)",
       "loading": "불러오는 중…"
+    }
+  },
+  "Companies": {
+    "common": {
+      "back": "뒤로",
+      "cancel": "취소",
+      "save": "저장",
+      "archive": "보관",
+      "restore": "복원",
+      "loading": "불러오는 중...",
+      "notSet": "입력되지 않음",
+      "unassigned": "담당자 없음",
+      "statuses": {
+        "all": "모든 상태",
+        "prospect": "잠재 고객",
+        "active_customer": "활성 고객",
+        "at_risk": "위험",
+        "inactive": "비활성",
+        "reactivated": "재활성화",
+        "archived": "보관됨",
+        "pending": "대기 중",
+        "completed": "완료됨",
+        "cancelled": "취소됨",
+        "rescheduled": "일정 변경됨",
+        "open": "열림",
+        "won": "성사",
+        "lost": "실패"
+      }
+    },
+    "list": {
+      "title": "회사",
+      "subtitle": "회사별로 연락처, 영업 기회, 후속 조치를 통합합니다.",
+      "newCompany": "새 회사",
+      "searchPlaceholder": "이름, 세금 ID, 세그먼트, 전화번호 또는 이메일로 검색",
+      "filters": {
+        "allOwners": "모든 담당자",
+        "allSegments": "모든 세그먼트",
+        "primaryContact": "주 연락처",
+        "withPrimary": "주 연락처 있음",
+        "withoutPrimary": "주 연락처 없음",
+        "nextFollowUp": "다음 후속 조치",
+        "withNext": "다음 조치 있음",
+        "withoutNext": "다음 조치 없음",
+        "active": "활성",
+        "archived": "보관됨",
+        "all": "전체",
+        "overdue": "기한 초과"
+      },
+      "table": {
+        "company": "회사",
+        "status": "상태",
+        "primary": "주 연락처",
+        "owner": "담당자",
+        "contacts": "연락처",
+        "deals": "영업 기회",
+        "nextAction": "다음 조치"
+      },
+      "loading": "회사를 불러오는 중...",
+      "emptyTitle": "회사를 찾을 수 없습니다.",
+      "emptyDescription": "필터를 조정하거나 첫 회사를 만드세요.",
+      "noSegment": "세그먼트 없음",
+      "archivedSuffix": "보관됨",
+      "pending": "대기 중",
+      "openDeals": "{count}개 열림",
+      "noNextAction": "다음 조치 없음"
+    },
+    "form": {
+      "newTitle": "새 회사",
+      "editTitle": "회사 편집",
+      "subtitle": "관계형 회사 레코드를 영업 기준 데이터로 유지하세요.",
+      "sections": {
+        "identity": "식별 정보",
+        "channels": "채널",
+        "address": "주소",
+        "notes": "메모"
+      },
+      "fields": {
+        "tradeName": "상호",
+        "legalName": "법적 이름",
+        "taxId": "세금 ID",
+        "commercialStatus": "영업 상태",
+        "segment": "세그먼트",
+        "owner": "담당자",
+        "primaryPhone": "대표 전화",
+        "primaryEmail": "대표 이메일",
+        "website": "웹사이트",
+        "addressLine1": "주소",
+        "addressLine2": "상세 주소",
+        "city": "도시",
+        "region": "주/지역",
+        "postalCode": "우편번호",
+        "country": "국가"
+      },
+      "toasts": {
+        "notFound": "회사를 찾을 수 없습니다.",
+        "unauthenticated": "인증되지 않은 사용자입니다.",
+        "updated": "회사가 업데이트되었습니다.",
+        "created": "회사가 생성되었습니다.",
+        "saveFailed": "회사 저장에 실패했습니다.",
+        "archiveFailed": "보관 상태 업데이트에 실패했습니다.",
+        "archived": "회사가 보관되었습니다.",
+        "restored": "회사가 복원되었습니다."
+      }
+    },
+    "detail": {
+      "areaFallback": "회사 영역",
+      "archivedSuffix": "보관됨",
+      "buttons": {
+        "contact": "연락처",
+        "deal": "영업 기회",
+        "followUp": "후속 조치",
+        "edit": "편집",
+        "linkExisting": "기존 항목 연결",
+        "complete": "완료",
+        "reschedule": "일정 변경"
+      },
+      "metrics": {
+        "contacts": "연락처",
+        "openDeals": "열린 영업 기회",
+        "nextFollowUp": "다음 후속 조치",
+        "overdue": "기한 초과",
+        "none": "없음",
+        "needsAction": "조치 필요",
+        "onTrack": "정상"
+      },
+      "panels": {
+        "overview": "개요",
+        "contacts": "연락처",
+        "deals": "영업 기회",
+        "followUps": "후속 조치",
+        "activities": "활동"
+      },
+      "info": {
+        "status": "상태",
+        "segment": "세그먼트",
+        "owner": "담당자",
+        "taxId": "세금 ID",
+        "phone": "전화",
+        "email": "이메일",
+        "website": "웹사이트",
+        "address": "주소",
+        "createdAt": "생성일",
+        "notes": "메모"
+      },
+      "contacts": {
+        "emptyTitle": "연결된 연락처 없음",
+        "emptyDescription": "이 회사를 운영하려면 연락처를 만들거나 연결하세요.",
+        "primarySuffix": "주 연락처",
+        "noRole": "직책 없음",
+        "undefinedRole": "역할 미설정"
+      },
+      "deals": {
+        "emptyTitle": "영업 기회 없음",
+        "emptyDescription": "실제 협상이 있을 때 이 회사에 연결된 영업 기회를 만드세요.",
+        "undefinedStage": "단계 미설정"
+      },
+      "followUps": {
+        "emptyTitle": "후속 조치 없음",
+        "emptyDescription": "회사, 연락처 또는 딜에 대한 다음 조치를 예약하세요.",
+        "companyScope": "회사 범위",
+        "noNote": "메모 없음"
+      },
+      "activities": {
+        "origin": "출처",
+        "company": "회사",
+        "emptyTitle": "아직 활동 없음",
+        "emptyDescription": "후속 조치 또는 관련 영업 레코드가 있으면 활동이 표시됩니다."
+      },
+      "prompts": {
+        "result": "결과",
+        "cancelReason": "취소 사유",
+        "newDueDate": "새 후속 조치 날짜"
+      },
+      "dialogs": {
+        "linkContactTitle": "기존 연락처 연결",
+        "chooseContact": "연락처 선택",
+        "link": "연결",
+        "createDealTitle": "회사 영업 기회 만들기",
+        "title": "제목",
+        "pipeline": "파이프라인",
+        "choosePipeline": "파이프라인 선택",
+        "stage": "단계",
+        "chooseStage": "단계 선택",
+        "contact": "연락처",
+        "noContact": "연락처 없음",
+        "value": "금액",
+        "createDeal": "영업 기회 만들기",
+        "createFollowUpTitle": "후속 조치 만들기",
+        "dueAt": "기한",
+        "deal": "영업 기회",
+        "noDeal": "영업 기회 없음",
+        "owner": "담당자",
+        "type": "유형",
+        "channel": "채널",
+        "priority": "우선순위",
+        "note": "메모",
+        "createFollowUp": "후속 조치 만들기"
+      },
+      "options": {
+        "call": "전화",
+        "meeting": "회의",
+        "proposal": "제안",
+        "reactivation": "재활성화",
+        "other": "기타",
+        "phone": "전화",
+        "internal": "내부",
+        "low": "낮음",
+        "normal": "보통",
+        "high": "높음",
+        "urgent": "긴급"
+      },
+      "toasts": {
+        "notFound": "회사를 찾을 수 없습니다.",
+        "updateFailed": "회사 업데이트에 실패했습니다.",
+        "archived": "회사가 보관되었습니다.",
+        "restored": "회사가 복원되었습니다.",
+        "contactWrongAccount": "연락처가 이 계정에 속하지 않습니다.",
+        "linkContactFailed": "연락처 연결에 실패했습니다.",
+        "unlinkContactFailed": "연락처 연결 해제에 실패했습니다.",
+        "primaryContactFailed": "주 연락처 설정에 실패했습니다.",
+        "completeFollowUpFailed": "후속 조치 완료에 실패했습니다.",
+        "cancelFollowUpFailed": "후속 조치 취소에 실패했습니다.",
+        "rescheduleFollowUpFailed": "후속 조치 일정 변경에 실패했습니다.",
+        "createDealFailed": "딜 생성에 실패했습니다.",
+        "selectedRecordWrongAccount": "선택한 레코드가 이 계정에 속하지 않습니다.",
+        "createFollowUpFailed": "후속 조치 생성에 실패했습니다."
+      }
     }
   }
 }

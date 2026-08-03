@@ -6,12 +6,13 @@ WACRM is a fork of the open-source `ArnasDon/wacrm` WhatsApp CRM template. It is
 
 ## Current Objective
 
-Advance the company-centered CRM foundation after completing the relational stabilization phase.
+Apply the Conversa / Conversa CRM brand while preserving technical compatibility and the ongoing Companies workspace work.
 
 The next increment should:
 
-1. define and implement the first operational Companies workspace;
-2. preserve compatibility with legacy `contacts.company` consumers while preventing conflicting writes.
+1. run visual QA in a real authenticated session for dashboard sidebar/header and Companies routes;
+2. verify light-mode brand assets through the real UI mode toggle;
+3. document and reduce remaining legacy `contacts.company` compatibility consumers.
 
 Do not deploy, push, commit, or run production migrations unless explicitly requested.
 
@@ -628,6 +629,506 @@ Pre-existing full-suite failures remain:
 - `src/lib/dashboard/date-utils.test.ts` — `mondayIndex` maps Monday to `6` instead of expected `0`;
 - `src/lib/dashboard/date-utils.test.ts` — `DOW_SHORT_MON_FIRST[mondayIndex(...)]` resolves to `Sun` instead of expected `Mon`.
 
+### 2026-08-02 Companies workspace MVP
+
+Implemented the first operational Companies workspace without migrations, deployment, commit, or push.
+
+Architecture used:
+
+- client-side App Router pages inside `(dashboard)`, matching the existing Contacts and Pipelines surfaces;
+- account-scoped Supabase queries with explicit `.eq("account_id", accountId)` filters;
+- database RLS remains the backend authority;
+- list aggregation is done from account-scoped company, contact, deal, follow-up, and profile queries;
+- shared testable logic lives in `src/lib/companies-workspace.ts`;
+- existing `ContactForm` is reused for creating contacts from a company by passing a default relational company.
+
+Routes created:
+
+- `/companies`;
+- `/companies/new`;
+- `/companies/[id]`;
+- `/companies/[id]/edit`.
+
+Components and files added:
+
+- `src/app/(dashboard)/companies/page.tsx`;
+- `src/app/(dashboard)/companies/new/page.tsx`;
+- `src/app/(dashboard)/companies/[id]/page.tsx`;
+- `src/app/(dashboard)/companies/[id]/edit/page.tsx`;
+- `src/components/companies/company-form.tsx`;
+- `src/lib/companies-workspace.ts`;
+- `src/lib/companies-workspace.test.ts`.
+
+Files updated:
+
+- `src/components/layout/sidebar.tsx`;
+- `src/components/layout/header.tsx`;
+- `src/components/contacts/contact-form.tsx`;
+- `messages/en.json`;
+- `messages/pt-BR.json`;
+- `messages/ko.json`;
+- `TASK.md`.
+
+Implemented capabilities:
+
+- Companies menu item near Contacts;
+- company list with search, status, owner, segment, primary-contact, next-follow-up, overdue, active/archived filters;
+- company creation and editing;
+- archive and restore;
+- company detail overview;
+- linked contacts and primary contact;
+- link existing contact;
+- unlink contact;
+- create contact already linked to the company;
+- open and closed deal display;
+- create deal with `company_id`;
+- company follow-up display;
+- create company/contact/deal-scoped follow-up;
+- complete, reschedule, and cancel follow-ups;
+- lightweight activities based on real follow-up data only.
+
+Security and data rules:
+
+- all company workspace data loads are scoped by `account_id`;
+- direct company ID access checks both `id` and `account_id`;
+- contact linking verifies the selected contact belongs to the current account;
+- deal creation verifies the optional selected contact belongs to the current account;
+- follow-up creation verifies selected contact/deal account ownership before insert;
+- `company_id` is the source of truth;
+- `contacts.company` is only populated from the linked company display name for legacy compatibility;
+- no purchase/order data, customer scoring, automatic reactivation classification, automatic messaging, many-to-many contact-company relations, or full omnichannel timeline were added.
+
+Legacy compatibility points:
+
+- `contacts.company` remains present for existing API, broadcast, flow, automation, and Inbox consumers;
+- new Companies UI reads from relational `companies` and linked `company_id`;
+- when linking contacts from Companies, the legacy `company` string is projected from `buildCompanyDisplayName(company)`.
+
+Validation:
+
+```text
+npm run test -- src/lib/companies-workspace.test.ts src/lib/companies.test.ts
+Result: passed, 8 tests
+```
+
+```text
+npm run typecheck
+Result: passed
+```
+
+```text
+npm run lint
+Result: passed, 37 warnings, 0 errors
+```
+
+```text
+npm run build
+Result: passed; routes include /companies, /companies/new, /companies/[id], /companies/[id]/edit
+```
+
+```text
+npm run test
+Result: 672 passed, 2 pre-existing failures in src/lib/dashboard/date-utils.test.ts
+```
+
+Limitations:
+
+- Companies page body copy is currently mostly inline English; only navigation labels were added to locale files;
+- operational UI is dense and functional but still needs browser-based visual QA;
+- local live Supabase validation was not run in this phase because prior DB startup was blocked by the documented local `pgsodium_root.key` issue;
+- activity aggregation is intentionally limited to existing follow-up data;
+- follow-up event history is preserved at the data model level, but the Company detail MVP does not yet render the full event log per follow-up.
+
+### 2026-08-02 Companies pt-BR labels pass
+
+Corrected visible labels and operational messages in the new Companies CRUD/workspace to Brazilian Portuguese.
+
+Changed:
+
+- list page labels, filters, empty states, table headings, and fallback text;
+- company form headings, field labels, buttons, status labels, and toast messages;
+- company detail headings, metrics, actions, dialogs, prompts, fallbacks, and toast messages;
+- shared Companies workspace validation/error messages;
+- focused test expectation for the localized cross-account company error.
+
+Validation:
+
+```text
+npm run test -- src/lib/companies-workspace.test.ts src/lib/companies.test.ts
+Result: passed, 8 tests
+```
+
+```text
+npm run typecheck
+Result: passed
+```
+
+```text
+npm run lint
+Result: passed, 37 warnings, 0 errors
+```
+
+```text
+npm run build
+Result: passed
+```
+
+Follow-up:
+
+- this inline-copy limitation was resolved by the Companies i18n dictionary pass below.
+
+### 2026-08-02 Companies i18n dictionary pass
+
+Moved the new Companies workspace copy out of page/component inline strings and into locale dictionaries.
+
+Changed files:
+
+- `messages/en.json`;
+- `messages/pt-BR.json`;
+- `messages/ko.json`;
+- `src/app/(dashboard)/companies/page.tsx`;
+- `src/app/(dashboard)/companies/[id]/page.tsx`;
+- `src/components/companies/company-form.tsx`;
+- `TASK.md`.
+
+Implemented:
+
+- added a `Companies` namespace in all locale dictionaries;
+- localized list page titles, filters, table headings, empty states, fallbacks, and status labels;
+- localized company form titles, sections, fields, buttons, status labels, and toasts;
+- localized company detail metrics, overview labels, contact/deal/follow-up panels, dialogs, prompts, options, fallbacks, and toasts;
+- kept technical terms such as `Email`, `Website`, `WhatsApp`, `Pipeline`, and `Follow-up` where they match existing product language.
+
+Limitations:
+
+- validation/errors returned by shared business helpers remain plain strings for now;
+- no browser visual QA was run in this pass;
+- no live Supabase data validation was run in this pass.
+
+Validation:
+
+```text
+npm run test -- src/lib/companies-workspace.test.ts src/lib/companies.test.ts
+Result: passed, 8 tests
+```
+
+```text
+npm run typecheck
+Result: passed
+```
+
+```text
+npm run lint
+Result: passed, 37 warnings, 0 errors
+```
+
+```text
+npm run build
+Result: passed
+```
+
+```text
+npm run test
+Result: 672 passed, 2 pre-existing failures in src/lib/dashboard/date-utils.test.ts
+```
+
+Pre-existing full-suite failures remain separate:
+
+- `src/lib/dashboard/date-utils.test.ts` — `mondayIndex` maps Monday to `6` instead of expected `0`;
+- `src/lib/dashboard/date-utils.test.ts` — `DOW_SHORT_MON_FIRST[mondayIndex(...)]` resolves to `Sun` instead of expected `Mon`.
+
+Recommended next step:
+
+- run the app locally with `NEXT_PUBLIC_APP_LOCALE=pt-BR`, perform browser QA on `/companies`, `/companies/new`, `/companies/[id]`, and `/companies/[id]/edit`, then fix any layout or copy regressions found with real data.
+
+### 2026-08-02 Companies local QA attempt and responsive list fix
+
+Continued with the recommended Companies QA step.
+
+Changed files:
+
+- `src/app/(dashboard)/companies/page.tsx`;
+- `TASK.md`.
+
+What was checked:
+
+- confirmed `.env.local` has `NEXT_PUBLIC_APP_LOCALE=pt-BR`;
+- started the local app with `npm run dev` on `http://localhost:3001`;
+- confirmed `/companies` returns `200 OK` and renders with `<html lang="pt-BR">`;
+- generated headless Chrome screenshots at desktop and mobile sizes.
+
+Limitation:
+
+- the headless screenshots only reached the app's authenticated client loading state because no browser session/local Supabase-authenticated user was available in this environment;
+- therefore, full visual QA with real company data remains pending.
+
+Fix applied:
+
+- updated the Companies list table wrapper to use horizontal overflow on small screens;
+- added a stable minimum table width so the seven-column operational table keeps readable columns instead of compressing or overlapping on mobile.
+
+Validation:
+
+```text
+npm run test -- src/lib/companies-workspace.test.ts src/lib/companies.test.ts
+Result: passed, 8 tests
+```
+
+```text
+npm run typecheck
+Result: passed
+```
+
+```text
+npm run lint
+Result: passed, 37 warnings, 0 errors
+```
+
+```text
+npm run build
+Result: passed
+```
+
+Recommended next step:
+
+- open the running app in a real authenticated browser session, validate `/companies`, `/companies/new`, `/companies/[id]`, and `/companies/[id]/edit` with representative account data, then address any actual visual/data-state findings.
+
+### 2026-08-02 Conversa branding pass
+
+Renamed visible product branding from WACRM/wacrm-facing copy to Conversa / Conversa CRM without changing package names, database objects, migrations, env vars, API key prefixes, MCP identifiers, storage keys, or upstream documentation.
+
+Asset source audit:
+
+- checked `/home/samuca/Imagens/brand`: found all expected PNG files;
+- checked `/home/Samuca/Imagens/brand`: no files found;
+- `orientacao.png` was inspected as reference only and was not copied into the app.
+
+Assets added:
+
+- `public/brand/conversa-symbol-dark.png` from `logo_dark.png`;
+- `public/brand/conversa-symbol-light.png` from `logo_ligth.png`;
+- `public/brand/conversa-logo-dark.png` from `logomarca_dark.png`;
+- `public/brand/conversa-logo-light.png` from `logomarca.png`;
+- `public/brand/conversa-wordmark-dark.png` from `name_dark.png`;
+- `public/brand/conversa-wordmark-light.png` from `name_ligth.png`;
+- `src/app/icon.png` generated from the light symbol asset at 512x512;
+- `src/app/apple-icon.png` generated from the light symbol asset at 180x180.
+
+Changed files:
+
+- `src/components/brand/brand-logo.tsx`;
+- `src/app/globals.css`;
+- `src/app/layout.tsx`;
+- `src/app/icon.tsx` removed in favor of static app icons;
+- `src/app/(auth)/login/page.tsx`;
+- `src/app/(auth)/signup/page.tsx`;
+- `src/app/(auth)/forgot-password/page.tsx`;
+- `src/app/(dashboard)/dashboard-shell.tsx`;
+- `src/components/layout/sidebar.tsx`;
+- `src/components/layout/header.tsx`;
+- `src/app/join/[token]/page.tsx`;
+- `src/components/settings/invite-member-dialog.tsx`;
+- `src/app/api/whatsapp/config/route.ts`;
+- `messages/en.json`;
+- `messages/pt-BR.json`;
+- `messages/ko.json`;
+- `TASK.md`.
+
+Applied brand surfaces:
+
+- login card uses the full Conversa CRM logomarca;
+- signup card uses the full Conversa CRM logomarca;
+- forgot-password card uses the full Conversa CRM logomarca;
+- public invitation page uses the full Conversa CRM logomarca;
+- dashboard loading/splash uses the Conversa symbol;
+- sidebar open state uses the full Conversa CRM logomarca;
+- mobile header/menu affordance uses the Conversa symbol;
+- Next metadata title/template/description/Open Graph use Conversa CRM;
+- browser icons use the isolated Conversa symbol;
+- visible invitation, WhatsApp registration, template deletion, AI settings, and account fallback copy now refer to Conversa.
+
+Theme behavior:
+
+- `BrandLogo` renders separate light/dark assets and switches via the existing `html[data-mode]` theme state;
+- no new theme system was introduced;
+- assets are rendered with `object-contain` and without filters, recoloring, crop, shadow, border, or background added by the app.
+
+References intentionally preserved as technical:
+
+- `package.json` package name, repository URLs, and upstream package metadata;
+- `wacrm_live_` API key prefix and related tests/comments;
+- `WACRM_*` MCP/server env vars and identifiers;
+- `wacrm.theme`, `wacrm.mode`, `wacrm.flowEditor.view`, and other localStorage keys;
+- migration comments and database-related identifiers;
+- fallback `https://wacrm.tech` behavior in invitation URL construction;
+- README, CHANGELOG, docs, and MCP documentation references to the upstream project.
+
+Validation:
+
+```text
+npm run typecheck
+Result: passed
+```
+
+```text
+npm run lint
+Result: passed, 37 warnings, 0 errors
+```
+
+```text
+npm run build
+Result: passed; /icon.png and /apple-icon.png generated as App Router routes
+```
+
+```text
+npm run test
+Result: 672 passed, 2 pre-existing failures in src/lib/dashboard/date-utils.test.ts
+```
+
+```text
+Final visible-brand search in src/messages/public/package.json
+Result: remaining wacrm/WACRM references are technical/package/upstream/internal references only
+```
+
+Manual visual QA:
+
+- started `npm run dev` locally;
+- captured login desktop, login mobile, and signup desktop in dark mode with Chrome headless;
+- confirmed the Conversa mark is visible, centered, proportionate, and not distorted;
+- mode-light screenshot could not be forced reliably in headless localStorage setup, so light-mode brand QA remains pending in a real browser session.
+
+Pre-existing test failures remain separate:
+
+- `src/lib/dashboard/date-utils.test.ts` — `mondayIndex` maps Monday to `6` instead of expected `0`;
+- `src/lib/dashboard/date-utils.test.ts` — `DOW_SHORT_MON_FIRST[mondayIndex(...)]` resolves to `Sun` instead of expected `Mon`.
+
+Recommended next step:
+
+- open the app in a real browser session, toggle light/dark mode, validate sidebar/header/auth/invite/Companies screens visually, then decide whether any source brand PNGs need transparent-background exports from design.
+
+### 2026-08-02 Conversa remodeled brand assets pass
+
+Reapplied the Conversa brand after the source images were remodeled.
+
+Asset source audit:
+
+- checked `/home/samuca/Imagens/brand`: found updated PNG files with new timestamps and smaller UI-oriented dimensions;
+- checked `/home/Samuca/Imagens/brand`: no files found;
+- `orientacao.png` remained reference-only and was not copied into the app.
+
+Updated source dimensions:
+
+- `logo_dark.png`: 917x921;
+- `logo_ligth.png`: 908x904;
+- `logomarca.png`: 1186x359;
+- `logomarca_dark.png`: 1225x356;
+- `name_dark.png`: 819x300;
+- `name_ligth.png`: 836x285.
+
+Changed files:
+
+- `public/brand/conversa-symbol-dark.png`;
+- `public/brand/conversa-symbol-light.png`;
+- `public/brand/conversa-logo-dark.png`;
+- `public/brand/conversa-logo-light.png`;
+- `public/brand/conversa-wordmark-dark.png`;
+- `public/brand/conversa-wordmark-light.png`;
+- `src/app/icon.png`;
+- `src/app/apple-icon.png`;
+- `src/components/brand/brand-logo.tsx`;
+- auth/join/sidebar files using `BrandLogo` sizing;
+- `TASK.md`.
+
+Implementation notes:
+
+- replaced all copied production brand assets with the remodeled versions;
+- regenerated exact 512x512 and 180x180 App Router icon files from the light symbol asset;
+- updated intrinsic dimensions in `BrandLogo`;
+- adjusted displayed logo sizing now that the source files have less excess canvas;
+- preserved all prior brand text/metadata changes and technical `wacrm` compatibility references.
+
+Validation:
+
+```text
+npm run typecheck
+Result: passed
+```
+
+```text
+npm run lint
+Result: passed, 37 warnings, 0 errors
+```
+
+```text
+npm run build
+Result: passed
+```
+
+Manual visual QA:
+
+- started local Next dev server on port 3001;
+- captured `/login` in Chrome headless mobile and desktop;
+- confirmed the remodeled logomarca renders without distortion and fits the auth card;
+- removed temporary screenshot files afterward.
+
+Recommended next step:
+
+- validate the remodeled assets in a real authenticated browser session, especially sidebar open/mobile header and light/dark mode switching.
+
+### 2026-08-02 Base UI Button link semantics fix
+
+Fixed the Base UI runtime error on the Companies page:
+
+```text
+A component that acts as a button expected a native <button> because the nativeButton prop is true.
+```
+
+Cause:
+
+- `Button` from `src/components/ui/button.tsx` wraps Base UI's button primitive;
+- Companies screens used `Button render={<Link ... />}` to render anchors with button styling;
+- Base UI expected a native `<button>` unless `nativeButton={false}` is set.
+
+Changed files:
+
+- `src/app/(dashboard)/companies/page.tsx`;
+- `src/app/(dashboard)/companies/[id]/page.tsx`;
+- `src/components/companies/company-form.tsx`;
+- `TASK.md`.
+
+Solution:
+
+- added `nativeButton={false}` only to `Button` instances that render Next `Link`;
+- did not change the global `Button` default;
+- preserved current visual styling and navigation behavior.
+
+Equivalent scan:
+
+- searched for `Button` rendering `Link` or anchor-like elements;
+- equivalent `Button render={<Link ... />}` cases were limited to the Companies surface and were all regularized.
+
+Validation:
+
+```text
+npm run test -- src/lib/companies-workspace.test.ts src/lib/companies.test.ts
+Result: passed, 8 tests
+```
+
+```text
+npm run typecheck
+Result: passed
+```
+
+```text
+npm run lint
+Result: passed, 37 warnings, 0 errors
+```
+
+```text
+npm run build
+Result: passed
+```
+
 ### Application
 
 ```text
@@ -700,50 +1201,28 @@ Result: no advisor findings related to companies
 
 ## Next Exact Action
 
-Proceed to the first operational Companies workspace.
+Run a focused Companies polish and verification pass.
 
-### Priority 1 — First Companies workspace
+### Priority 1 — Browser QA and UX polish
 
-A dedicated Companies UI may now proceed.
+Validate `/companies`, `/companies/new`, `/companies/[id]`, and `/companies/[id]/edit` in a browser with representative data.
 
-The MVP must be operational, not merely a CRUD.
+Check:
 
-It should answer:
-
-1. Who is this company?
-2. Which contacts belong to it?
-3. Which opportunities are open?
-4. What is the next action?
-
-Recommended initial scope:
-
-- Companies menu item;
-- companies list;
-- search and commercial filters;
-- create company;
-- edit company;
-- archive and restore company;
-- company detail;
-- linked contacts;
+- responsive table behavior on mobile;
+- empty states;
+- form validation errors;
+- archive and restore flows;
+- contact linking/unlinking;
 - primary contact;
-- linked deals;
-- company follow-ups;
-- existing activities;
-- create contact from company;
-- create deal from company;
-- create follow-up from company.
+- company-scoped deal creation;
+- company/contact/deal-scoped follow-up creation.
 
-Do not include yet:
+### Priority 2 — Companies i18n structure
 
-- fake purchases;
-- days since last purchase;
-- automatic customer scoring;
-- automatic reactivation classification;
-- broad Inbox refactoring;
-- complete omnichannel timeline;
-- many-to-many company-contact relationships.
+Move Companies page/form/detail copy into `messages/en.json`, `messages/pt-BR.json`, and `messages/ko.json` instead of keeping page-level copy inline.
 
-### Priority 2 — Legacy migration map
+### Priority 3 — Legacy migration map
 
 Keep a documented list of remaining `contacts.company` consumers.
 

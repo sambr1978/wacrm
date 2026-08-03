@@ -34,6 +34,7 @@ interface ContactFormProps {
   onOpenChange: (open: boolean) => void;
   contact?: Contact | null;
   contactTags?: ContactTag[];
+  defaultCompany?: Company | null;
   onSaved: () => void;
   /** Open an existing contact's detail view — used by the duplicate
    *  notice to jump to the contact that already owns this number. */
@@ -45,6 +46,7 @@ export function ContactForm({
   onOpenChange,
   contact,
   contactTags = [],
+  defaultCompany = null,
   onSaved,
   onViewExisting,
 }: ContactFormProps) {
@@ -82,8 +84,14 @@ export function ContactForm({
       setName(contact?.name ?? '');
       setPhone(contact?.phone ?? '');
       setEmail(contact?.email ?? '');
-      setCompanyId(contact?.company_id ?? '');
-      setNewCompanyName(contact?.company && !contact?.company_id ? contact.company : '');
+      setCompanyId(contact?.company_id ?? defaultCompany?.id ?? '');
+      setNewCompanyName(
+        contact?.company && !contact?.company_id
+          ? contact.company
+          : defaultCompany && !contact
+            ? ''
+            : '',
+      );
       setJobTitle(contact?.job_title ?? '');
       setCommercialRole(contact?.commercial_role ?? '');
       setIsPrimaryCompanyContact(contact?.is_primary_company_contact ?? false);
@@ -92,7 +100,7 @@ export function ContactForm({
       fetchTags();
       fetchCompanies();
     }
-  }, [open, contact]);
+  }, [open, contact, defaultCompany]);
 
   // Look up an existing contact with this number (new contacts only).
   // Runs on blur so we don't query on every keystroke.
@@ -174,6 +182,9 @@ export function ContactForm({
       let resolvedCompanyId = companyId || null;
       let legacyCompanyName =
         companies.find((company) => company.id === resolvedCompanyId)?.trade_name ||
+        (defaultCompany?.id === resolvedCompanyId
+          ? buildCompanyDisplayName(defaultCompany)
+          : null) ||
         newCompanyName.trim() ||
         null;
 
