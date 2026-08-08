@@ -5,7 +5,8 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/use-auth';
 import { addContactTag, deleteContactTag } from '@/lib/contacts/tag-api';
 import { toast } from 'sonner';
-import type { Contact, Tag, ContactTag } from '@/types';
+import type { Company, Contact, ContactCommercialRole, Tag, ContactTag } from '@/types';
+import { buildCompanyDisplayName } from '@/lib/companies';
 import {
   findExistingContact,
   isExactMatch,
@@ -24,6 +25,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, AlertTriangle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
@@ -32,6 +34,7 @@ interface ContactFormProps {
   onOpenChange: (open: boolean) => void;
   contact?: Contact | null;
   contactTags?: ContactTag[];
+  defaultCompany?: Company | null;
   onSaved: () => void;
   /** Open an existing contact's detail view — used by the duplicate
    *  notice to jump to the contact that already owns this number. */
@@ -43,6 +46,7 @@ export function ContactForm({
   onOpenChange,
   contact,
   contactTags = [],
+  defaultCompany = null,
   onSaved,
   onViewExisting,
 }: ContactFormProps) {
@@ -54,7 +58,11 @@ export function ContactForm({
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  const [company, setCompany] = useState('');
+  const [companyId, setCompanyId] = useState('');
+  const [newCompanyName, setNewCompanyName] = useState('');
+  const [jobTitle, setJobTitle] = useState('');
+  const [commercialRole, setCommercialRole] = useState<ContactCommercialRole | ''>('');
+  const [isPrimaryCompanyContact, setIsPrimaryCompanyContact] = useState(false);
   const [saving, setSaving] = useState(false);
 
   // Duplicate-phone detection for NEW contacts. `exact` (same digits)
@@ -67,6 +75,7 @@ export function ContactForm({
   const [checkingDup, setCheckingDup] = useState(false);
 
   const [tags, setTags] = useState<Tag[]>([]);
+  const [companies, setCompanies] = useState<Company[]>([]);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [loadingTags, setLoadingTags] = useState(false);
 
@@ -75,12 +84,23 @@ export function ContactForm({
       setName(contact?.name ?? '');
       setPhone(contact?.phone ?? '');
       setEmail(contact?.email ?? '');
-      setCompany(contact?.company ?? '');
+      setCompanyId(contact?.company_id ?? defaultCompany?.id ?? '');
+      setNewCompanyName(
+        contact?.company && !contact?.company_id
+          ? contact.company
+          : defaultCompany && !contact
+            ? ''
+            : '',
+      );
+      setJobTitle(contact?.job_title ?? '');
+      setCommercialRole(contact?.commercial_role ?? '');
+      setIsPrimaryCompanyContact(contact?.is_primary_company_contact ?? false);
       setSelectedTagIds(contactTags.map((ct) => ct.tag_id));
       setDupMatch(null);
       fetchTags();
+      fetchCompanies();
     }
-  }, [open, contact]);
+  }, [open, contact, defaultCompany]);
 
   // Look up an existing contact with this number (new contacts only).
   // Runs on blur so we don't query on every keystroke.
@@ -112,6 +132,17 @@ export function ContactForm({
       .order('name');
     if (data) setTags(data);
     setLoadingTags(false);
+  }
+
+  async function fetchCompanies() {
+    if (!accountId) return;
+    const { data } = await supabase
+      .from('companies')
+      .select('*')
+      .eq('account_id', accountId)
+      .is('archived_at', null)
+      .order('trade_name');
+    if (data) setCompanies(data as Company[]);
   }
 
   function toggleTag(tagId: string) {
@@ -148,6 +179,29 @@ export function ContactForm({
       if (!accountId) throw new Error('Your profile is not linked to an account.');
 
       let contactId = contact?.id;
+      let resolvedCompanyId = companyId || null;
+      let legacyCompanyName =
+        companies.find((company) => company.id === resolvedCompanyId)?.trade_name ||
+        (defaultCompany?.id === resolvedCompanyId
+          ? buildCompanyDisplayName(defaultCompany)
+          : null) ||
+        newCompanyName.trim() ||
+        null;
+
+      if (!resolvedCompanyId && newCompanyName.trim()) {
+        const { data: company, error: companyError } = await supabase
+          .from('companies')
+          .insert({
+            account_id: accountId,
+            user_id: user.id,
+            trade_name: newCompanyName.trim(),
+          })
+          .select('*')
+          .single();
+        if (companyError || !company) throw companyError;
+        resolvedCompanyId = company.id;
+        legacyCompanyName = buildCompanyDisplayName(company as Company);
+      }
 
       if (isEdit && contactId) {
         const { error } = await supabase
@@ -156,7 +210,11 @@ export function ContactForm({
             name: name.trim() || null,
             phone: phone.trim(),
             email: email.trim() || null,
-            company: company.trim() || null,
+            company: legacyCompanyName,
+            company_id: resolvedCompanyId,
+            job_title: jobTitle.trim() || null,
+            commercial_role: commercialRole || null,
+            is_primary_company_contact: !!resolvedCompanyId && isPrimaryCompanyContact,
             updated_at: new Date().toISOString(),
           })
           .eq('id', contactId);
@@ -170,7 +228,11 @@ export function ContactForm({
             name: name.trim() || null,
             phone: phone.trim(),
             email: email.trim() || null,
-            company: company.trim() || null,
+            company: legacyCompanyName,
+            company_id: resolvedCompanyId,
+            job_title: jobTitle.trim() || null,
+            commercial_role: commercialRole || null,
+            is_primary_company_contact: !!resolvedCompanyId && isPrimaryCompanyContact,
           })
           .select('id')
           .single();
@@ -314,14 +376,77 @@ export function ContactForm({
             <Label htmlFor="cf-company" className="text-muted-foreground">
               {t('companyLabel')}
             </Label>
-            <Input
+            <select
               id="cf-company"
-              value={company}
-              onChange={(e) => setCompany(e.target.value)}
-              placeholder={t('companyPlaceholder')}
+              value={companyId}
+              onChange={(e) => {
+                setCompanyId(e.target.value);
+                if (e.target.value) setNewCompanyName('');
+              }}
+              className="h-9 w-full rounded-lg border border-border bg-muted px-2.5 text-sm text-foreground outline-none focus:border-primary"
+            >
+              <option value="">{t('noCompany')}</option>
+              {companies.map((company) => (
+                <option key={company.id} value={company.id}>
+                  {buildCompanyDisplayName(company)}
+                </option>
+              ))}
+            </select>
+            <Input
+              value={newCompanyName}
+              onChange={(e) => {
+                setNewCompanyName(e.target.value);
+                if (e.target.value.trim()) setCompanyId('');
+              }}
+              placeholder={t('newCompanyPlaceholder')}
               className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
             />
+            <p className="text-xs text-muted-foreground">
+              {t('companyRelationHint')}
+            </p>
           </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor="cf-job-title" className="text-muted-foreground">
+                {t('jobTitleLabel')}
+              </Label>
+              <Input
+                id="cf-job-title"
+                value={jobTitle}
+                onChange={(e) => setJobTitle(e.target.value)}
+                placeholder={t('jobTitlePlaceholder')}
+                className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="cf-commercial-role" className="text-muted-foreground">
+                {t('commercialRoleLabel')}
+              </Label>
+              <select
+                id="cf-commercial-role"
+                value={commercialRole}
+                onChange={(e) => setCommercialRole(e.target.value as ContactCommercialRole | '')}
+                className="h-9 w-full rounded-lg border border-border bg-muted px-2.5 text-sm text-foreground outline-none focus:border-primary"
+              >
+                <option value="">{t('commercialRoles.none')}</option>
+                <option value="buyer">{t('commercialRoles.buyer')}</option>
+                <option value="decision_maker">{t('commercialRoles.decision_maker')}</option>
+                <option value="finance">{t('commercialRoles.finance')}</option>
+                <option value="technical_user">{t('commercialRoles.technical_user')}</option>
+                <option value="other">{t('commercialRoles.other')}</option>
+              </select>
+            </div>
+          </div>
+
+          <label className="flex items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
+            <Checkbox
+              checked={isPrimaryCompanyContact}
+              onCheckedChange={(checked) => setIsPrimaryCompanyContact(checked === true)}
+              disabled={!companyId && !newCompanyName.trim()}
+            />
+            {t('primaryCompanyContact')}
+          </label>
 
           <div className="space-y-2">
             <Label className="text-muted-foreground">{t('tagsLabel')}</Label>

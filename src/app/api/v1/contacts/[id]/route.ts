@@ -66,6 +66,14 @@ export async function PATCH(
         return fail('bad_request', `'${field}' must be a string or null`, 400);
       }
     }
+    if ('company_id' in body) {
+      const value = body.company_id;
+      if (value === null || typeof value === 'string') {
+        updates.company_id = value;
+      } else {
+        return fail('bad_request', "'company_id' must be a string or null", 400);
+      }
+    }
 
     if (Object.keys(updates).length > 0) {
       updates.updated_at = new Date().toISOString();

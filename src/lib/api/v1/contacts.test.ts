@@ -15,6 +15,8 @@ describe('serializeContact', () => {
       name: 'Jane',
       email: null,
       company: 'Acme',
+      company_id: null,
+      company_record: null,
       avatar_url: null,
       created_at: '2026-01-01T00:00:00Z',
       updated_at: '2026-01-02T00:00:00Z',
@@ -29,6 +31,8 @@ describe('serializeContact', () => {
       name: 'Jane',
       email: null,
       company: 'Acme',
+      company_id: null,
+      company_record: null,
       avatar_url: null,
       tags: [{ id: 't1', name: 'vip', color: '#fff' }],
       created_at: '2026-01-01T00:00:00Z',
@@ -48,6 +52,35 @@ describe('serializeContact', () => {
       updated_at: 'b',
     };
     expect(serializeContact(row).tags).toEqual([]);
+  });
+
+  it('projects company from the linked company record when present', () => {
+    const row = {
+      id: 'c3',
+      phone: '+1',
+      name: null,
+      email: null,
+      company: 'Legacy Acme',
+      company_id: 'co1',
+      company_record: {
+        id: 'co1',
+        trade_name: 'Acme Brasil',
+        legal_name: 'Acme Comercio Ltda',
+        commercial_status: 'prospect',
+      },
+      avatar_url: null,
+      created_at: 'a',
+      updated_at: 'b',
+    };
+
+    expect(serializeContact(row)).toMatchObject({
+      company: 'Acme Brasil',
+      company_id: 'co1',
+      company_record: {
+        id: 'co1',
+        trade_name: 'Acme Brasil',
+      },
+    });
   });
 });
 

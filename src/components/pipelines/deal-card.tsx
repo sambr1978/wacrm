@@ -1,9 +1,11 @@
 "use client";
 
 import type { Deal, PipelineStage } from "@/types";
-import { Calendar, Check, X } from "lucide-react";
+import { AlertTriangle, Calendar, Check, Clock, X } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 import { useTranslations } from "next-intl";
+import { activeDealNeedsFollowUp, getFollowUpBucket, getNextPendingFollowUp } from "@/lib/follow-ups";
+import { buildCompanyDisplayName } from "@/lib/companies";
 
 interface DealCardProps {
   deal: Deal;
@@ -29,7 +31,22 @@ function initials(name?: string, fallback?: string) {
 export function DealCard({ deal, stage, onEdit, isOverlay }: DealCardProps) {
   const t = useTranslations("Pipelines.card");
   const contactLabel = deal.contact?.name || deal.contact?.phone || t("noContact");
+  const companyLabel =
+    deal.company
+      ? buildCompanyDisplayName(deal.company)
+      : deal.contact?.company_record
+        ? buildCompanyDisplayName(deal.contact.company_record)
+        : deal.contact?.company || null;
   const assigneeLabel = deal.assignee?.full_name || null;
+  const nextFollowUp = getNextPendingFollowUp(deal.follow_ups);
+  const needsFollowUp = activeDealNeedsFollowUp(deal, deal.follow_ups);
+  const followUpBucket = nextFollowUp ? getFollowUpBucket(nextFollowUp) : null;
+  const followUpTone =
+    followUpBucket === "overdue"
+      ? "border-red-500/40 bg-red-500/10 text-red-300"
+      : followUpBucket === "today"
+        ? "border-amber-500/40 bg-amber-500/10 text-amber-300"
+        : "border-border bg-muted/60 text-muted-foreground";
 
   return (
     <button
@@ -79,10 +96,15 @@ export function DealCard({ deal, stage, onEdit, isOverlay }: DealCardProps) {
         </span>
         <span className="truncate text-xs text-muted-foreground">{contactLabel}</span>
       </div>
+      {companyLabel && (
+        <p className="mt-1 truncate text-xs font-medium text-foreground/80">
+          {companyLabel}
+        </p>
+      )}
 
       <div className="mt-2 flex items-center justify-between">
         <span className="text-sm font-bold text-primary">
-          {formatCurrency(deal.value, deal.currency)}
+          {formatCurrency(deal.value, deal.currency ?? undefined)}
         </span>
         {deal.expected_close_date && (
           <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
@@ -102,6 +124,24 @@ export function DealCard({ deal, stage, onEdit, isOverlay }: DealCardProps) {
           </span>
         </div>
       )}
+
+      <div className="mt-3 border-t border-border/60 pt-2">
+        {nextFollowUp ? (
+          <span
+            className={`inline-flex max-w-full items-center gap-1 rounded-md border px-2 py-1 text-[11px] ${followUpTone}`}
+          >
+            <Clock className="h-3 w-3 shrink-0" />
+            <span className="truncate">
+              {t("nextAction")}: {new Date(nextFollowUp.due_at).toLocaleString()}
+            </span>
+          </span>
+        ) : needsFollowUp ? (
+          <span className="inline-flex max-w-full items-center gap-1 rounded-md border border-red-500/40 bg-red-500/10 px-2 py-1 text-[11px] text-red-300">
+            <AlertTriangle className="h-3 w-3 shrink-0" />
+            <span className="truncate">{t("noNextAction")}</span>
+          </span>
+        ) : null}
+      </div>
     </button>
   );
 }

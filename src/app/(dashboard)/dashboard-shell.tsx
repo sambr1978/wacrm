@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
+import { BrandLogo } from "@/components/brand/brand-logo";
 import { PresenceHeartbeat } from "@/components/presence/presence-heartbeat";
 
 // Auth-gated dashboard shell. Extracted from the layout so the layout
@@ -30,8 +31,9 @@ function DashboardShellInner({ children }: { children: React.ReactNode }) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-3">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          <p className="text-sm text-muted-foreground">Loading...</p>
+          <BrandLogo variant="symbol" className="h-12 w-12" priority />
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <p className="text-sm text-muted-foreground">Carregando Conversa...</p>
         </div>
       </div>
     );

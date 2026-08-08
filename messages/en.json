@@ -15,7 +15,7 @@
     "createAccount": "Create account"
   },
   "Sidebar": {
-    "title": "CRM Template for WhatsApp",
+    "title": "Conversa CRM",
     "dashboard": "Dashboard",
     "inbox": "Inbox",
     "notifications": "Notifications",
@@ -38,7 +38,8 @@
     "defaultAvatar": "Avatar",
     "menuProfile": "Profile",
     "menuSettings": "Settings",
-    "menuSignOut": "Sign out"
+    "menuSignOut": "Sign out",
+    "companies": "Companies"
   },
   "Header": {
     "dashboard": "Dashboard",
@@ -55,7 +56,8 @@
     "defaultAvatar": "Avatar",
     "menuProfile": "Profile",
     "menuSettings": "Settings",
-    "menuSignOut": "Sign out"
+    "menuSignOut": "Sign out",
+    "companies": "Companies"
   },
   "ModeToggle": {
     "switchMode": "Switch to {mode} mode"
@@ -216,7 +218,25 @@
       "interactiveReply": "[Interactive reply]",
       "unsupported": "[Unsupported message type]",
       "aiBadge": "AI",
-      "aiBadgeTitle": "Sent automatically by the AI assistant"
+      "aiBadgeTitle": "Sent automatically by the AI assistant",
+      "download": "Download",
+      "downloadFailed": "Couldn't download the attachment",
+      "viewImage": "View image",
+      "expandVideo": "Expand video",
+      "imageAlt": "Shared image"
+    },
+    "mediaViewer": {
+      "counter": "{index} of {total}",
+      "previous": "Previous",
+      "next": "Next",
+      "zoomIn": "Zoom to full size",
+      "zoomOut": "Fit to screen",
+      "openOriginal": "Open original",
+      "download": "Download",
+      "downloadFailed": "Couldn't download the attachment",
+      "failed": "This attachment is no longer available",
+      "imageAlt": "Shared image",
+      "you": "You"
     },
     "actions": {
       "reply": "Reply",
@@ -332,6 +352,21 @@
       "emailPlaceholder": "jane@example.com",
       "companyLabel": "Company",
       "companyPlaceholder": "Acme Corp",
+      "noCompany": "No company",
+      "newCompanyPlaceholder": "Create a new company",
+      "companyRelationHint": "Contacts can exist without a company. Creating a company preserves commercial history beyond this person.",
+      "jobTitleLabel": "Job title",
+      "jobTitlePlaceholder": "Purchasing manager",
+      "commercialRoleLabel": "Commercial role",
+      "primaryCompanyContact": "Primary contact for this company",
+      "commercialRoles": {
+        "none": "No role",
+        "buyer": "Buyer",
+        "decision_maker": "Decision maker",
+        "finance": "Finance",
+        "technical_user": "Technical user",
+        "other": "Other"
+      },
       "tagsLabel": "Tags",
       "tagsPlaceholder": "Select tags...",
       "noTagsFound": "No tags found.",
@@ -359,9 +394,9 @@
         "custom": "Custom Fields",
         "deals": "Deals",
         "tags": "Tags",
-      "noTags": "No tags",
-      "noDeals": "No deals",
-      "addNotePlaceholder": "Add a note..."
+        "noTags": "No tags",
+        "noDeals": "No deals",
+        "addNotePlaceholder": "Add a note..."
       },
       "actions": {
         "edit": "Edit",
@@ -371,9 +406,23 @@
       "contactInfo": "Contact Information",
       "unnamed": "Unknown",
       "contactDetailsDesc": "Contact details",
+      "name": "Name",
       "phone": "Phone",
       "email": "Email",
       "company": "Company",
+      "noCompany": "No company",
+      "newCompanyPlaceholder": "Create a new company",
+      "jobTitle": "Job title",
+      "commercialRole": "Commercial role",
+      "primaryCompanyContact": "Primary contact for this company",
+      "commercialRoles": {
+        "none": "No role",
+        "buyer": "Buyer",
+        "decision_maker": "Decision maker",
+        "finance": "Finance",
+        "technical_user": "Technical user",
+        "other": "Other"
+      },
       "createdAt": "Created At",
       "customFields": "Custom Fields",
       "noCustomFields": "No custom fields defined. Create them in Settings.",
@@ -494,7 +543,13 @@
       "toastFailedMoveDeal": "Failed to move deal",
       "toastFailedCreatePipeline": "Failed to create pipeline",
       "toastPipelineCreated": "Pipeline created",
-      "toastNotLinkedToAccount": "Your profile is not linked to an account."
+      "toastNotLinkedToAccount": "Your profile is not linked to an account.",
+      "toastFailedCreateFollowUp": "Failed to create follow-up",
+      "toastFollowUpCreated": "Follow-up created",
+      "toastFailedUpdateFollowUp": "Failed to update follow-up",
+      "toastFollowUpCompleted": "Follow-up completed",
+      "toastFollowUpRescheduled": "Follow-up rescheduled",
+      "toastFollowUpCancelled": "Follow-up cancelled"
     },
     "board": {
       "dropDealHere": "Drop a deal here",
@@ -503,7 +558,71 @@
     "card": {
       "noContact": "No contact",
       "won": "Won",
-      "lost": "Lost"
+      "lost": "Lost",
+      "nextAction": "Next action",
+      "noNextAction": "No next action"
+    },
+    "followUps": {
+      "agendaTitle": "Follow-up Agenda",
+      "agendaSubtitle": "Overdue, today, upcoming, and recently completed actions.",
+      "overdue": "Overdue",
+      "today": "Today",
+      "upcoming": "Upcoming",
+      "recentlyCompleted": "Recently completed",
+      "emptyCompleted": "No completed follow-ups yet.",
+      "emptyBucket": "Nothing here.",
+      "noNextActionTitle": "No Next Action",
+      "emptyNoNextAction": "Every open deal has a pending follow-up.",
+      "reactivationTitle": "Reactivation",
+      "emptyReactivation": "No stale contacts found in the current account.",
+      "noContact": "No contact",
+      "schedule": "Schedule",
+      "reactivate": "Reactivate",
+      "daysWithoutContact": "{count, plural, one {# day without contact} other {# days without contact}}",
+      "purchaseUnavailable": "purchase source not connected",
+      "newFollowUpFor": "New follow-up for {label}",
+      "dueAt": "Date and time",
+      "activityType": "Activity type",
+      "channel": "Channel",
+      "priority": "Priority",
+      "note": "Observation",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "create": "Create",
+      "complete": "Complete",
+      "reschedule": "Reschedule",
+      "cancelAction": "Cancel",
+      "untitled": "Untitled follow-up",
+      "resultPrompt": "Result of this follow-up",
+      "decisionPrompt": "Next decision: new_follow_up, reschedule, move_stage, create_opportunity, mark_reactivated, future_follow_up, or close_no_interest",
+      "reschedulePrompt": "New date and time (YYYY-MM-DDTHH:mm)",
+      "cancelPrompt": "Why cancel this follow-up?",
+      "activityTypes": {
+        "whatsapp": "WhatsApp",
+        "phone": "Phone",
+        "email": "Email",
+        "meeting": "Meeting",
+        "proposal": "Proposal",
+        "agreed_return": "Agreed return",
+        "post_sale": "Post-sale",
+        "rebuy": "Rebuy",
+        "reactivation": "Reactivation",
+        "internal_note": "Internal note"
+      },
+      "channels": {
+        "whatsapp": "WhatsApp",
+        "phone": "Phone",
+        "email": "Email",
+        "meeting": "Meeting",
+        "internal": "Internal",
+        "other": "Other"
+      },
+      "priorities": {
+        "low": "Low",
+        "normal": "Normal",
+        "high": "High",
+        "urgent": "Urgent"
+      }
     },
     "form": {
       "editDeal": "Edit Deal",
@@ -971,6 +1090,8 @@
         "placeholderBody": "{\"id\": \"{{ contact.id }}\"}",
         "matchType": "Match type",
         "matchContains": "Contains",
+        "matchWord": "Whole word",
+        "matchWordHint": "Matches the keyword only as a standalone word, so \"k\" no longer fires on \"thanks\". Best for short keywords in space-separated languages; use Contains for languages written without spaces.",
         "matchExact": "Exact",
         "closeConversationHint": "Sets the conversation status to \"closed\". No configuration needed."
       }
@@ -1275,7 +1396,7 @@
       "labelTooLong": "Label must be {max} characters or fewer",
       "copied": "Invite link copied",
       "clipboardBlocked": "Clipboard blocked — copy the link manually",
-      "whatsappMessage": "Join {accountName} on wacrm using this link (valid for {expiresInDays} days): {url}"
+      "whatsappMessage": "Join {accountName} on Conversa using this link (valid for {expiresInDays} days): {url}"
     },
     "tagsAndFields": {
       "title": "Fields & tags",
@@ -1331,13 +1452,11 @@
       "deleteLocallyAria": "Delete template locally",
       "deleteMetaLocallyTitle": "Delete from Meta and locally",
       "deleteLocallyTitle": "Delete locally",
-      
       "dialogEditTitle": "Edit Message Template",
       "dialogNewTitle": "New Message Template",
       "dialogEditDesc": "Save your changes to re-submit to Meta. Status will flip back to PENDING during review.",
       "dialogNewDesc": "Build a template and submit it to Meta for approval. Once approved, you can use it in broadcasts and the inbox.",
       "authWarning": "AUTHENTICATION templates have a fixed body + OTP button shape that needs a different builder. Create them in Meta WhatsApp Manager for now and use <bold>Sync from Meta</bold> to bring them in.",
-      
       "templateName": "Template Name",
       "namePlaceholder": "e.g. order_confirmation",
       "nameFixed": "Name is fixed once a template exists on Meta — create a new template to change it.",
@@ -1346,7 +1465,6 @@
       "language": "Language",
       "langFixed": "Language is fixed once a template exists on Meta.",
       "langHint": "Must match the exact code on Meta — <code>en_US</code> and <code>en</code> are distinct.",
-      
       "header": "Header",
       "headerNone": "None",
       "headerText": "Text",
@@ -1356,7 +1474,6 @@
       "headerTextPlaceholder": "Header text (max 60 chars, optional {{1}})",
       "headerSampleAria": "Sample value for header variable",
       "headerSamplePlaceholder": "Sample value for {{1}} (required for Meta review)",
-      
       "uploadImage": "Upload image",
       "uploadHint": "JPEG or PNG, ≤5 MB",
       "mediaUrlPlaceholder": "https://… (or paste a public {format} link)",
@@ -1364,17 +1481,14 @@
       "mediaHint": "Must be a publicly accessible HTTPS link. Meta fetches it once during review, so it needs to stay live for ~24 hrs.",
       "videoHint": " Recommended: MP4 / 3GPP, ≤16 MB, ≤60 seconds.",
       "documentHint": " Recommended: PDF, ≤100 MB.",
-      
       "bodyText": "Body Text",
       "bodyPlaceholder": "Hello {{1}}, your order {{2}} is confirmed.",
       "bodyHint": "Use {{1}}, {{2}} for variables (must be contiguous starting at {{1}}).",
       "sampleValues": "Sample values (Meta uses these to review your template)",
       "sampleAria": "Sample value for body variable {var}",
       "samplePlaceholder": "Sample for {var}",
-      
       "footer": "Footer (optional)",
       "footerPlaceholder": "Optional footer text (max 60 chars)",
-      
       "buttons": "Buttons (optional)",
       "addButton": "Add Button",
       "buttonsLimit": "Up to {max} buttons. QUICK_REPLY buttons must come before URL / phone / copy-code buttons.",
@@ -1387,19 +1501,16 @@
       "urlSamplePlaceholder": "Example value for {{1}} (required when URL has a variable)",
       "phonePlaceholder": "+15551234567",
       "codePlaceholder": "Example code (e.g. SUMMER20)",
-      
       "cancel": "Cancel",
       "saving": "Saving…",
       "submitting": "Submitting…",
       "saveResubmit": "Save & Resubmit",
       "submitApproval": "Submit for Approval",
-      
       "deleteDialogTitle": "Delete template?",
-      "deleteMetaDesc": "\"{name}\" will be deleted from Meta and from wacrm. Active broadcasts using this template will start failing on their next send. This can't be undone.",
-      "deleteLocalDesc": "\"{name}\" will be deleted from wacrm. It was never submitted to Meta, so no remote cleanup is needed.",
+      "deleteMetaDesc": "\"{name}\" will be deleted from Meta and from Conversa. Active broadcasts using this template will start failing on their next send. This can't be undone.",
+      "deleteLocalDesc": "\"{name}\" will be deleted from Conversa. It was never submitted to Meta, so no remote cleanup is needed.",
       "deleting": "Deleting…",
       "delete": "Delete",
-      
       "toastLoadFailed": "Failed to load templates",
       "toastSubmitFailed": "Failed to submit",
       "toastSubmitEditSuccess": "Edit submitted — Meta typically reviews within 24 hours.",
@@ -1438,7 +1549,7 @@
       "notConnected": "Not Connected",
       "connectedDesc": "Your access token authenticates with Meta. See Registration status below for whether webhooks are actually wired.",
       "notConnectedDesc": "Configure your Meta API credentials below to connect your WhatsApp Business account.",
-      "registered": "Registered — Meta will deliver events to wacrm",
+      "registered": "Registered — Meta will deliver events to Conversa",
       "notRegistered": "Not registered — Meta will not deliver events",
       "verifyWithMeta": "Verify with Meta",
       "subscribedSince": "Subscribed since {date}. Click Verify with Meta if events stop arriving.",
@@ -1462,7 +1573,7 @@
       "twoStepPin": "Two-step verification PIN",
       "optional": "(optional)",
       "pinPlaceholder": "6-digit PIN from Meta WhatsApp Manager",
-      "pinHint": "Needed only to wire inbound messages for a production number. Set it in Meta Business Manager → WhatsApp Accounts → Phone Numbers → Two-step verification, then paste it here so wacrm can subscribe the number — otherwise Meta routes inbound events to whichever app last claimed it (the symptom that hits second numbers under a shared WABA). Meta test numbers have no PIN and are pre-registered — leave this blank for them. Leaving it blank also keeps an existing registration untouched.",
+      "pinHint": "Needed only to wire inbound messages for a production number. Set it in Meta Business Manager → WhatsApp Accounts → Phone Numbers → Two-step verification, then paste it here so Conversa can subscribe the number — otherwise Meta routes inbound events to whichever app last claimed it (the symptom that hits second numbers under a shared WABA). Meta test numbers have no PIN and are pre-registered — leave this blank for them. Leaving it blank also keeps an existing registration untouched.",
       "webhookTitle": "Webhook Configuration",
       "webhookDesc": "Use this URL as your webhook callback in the Meta App Dashboard.",
       "webhookUrl": "Webhook Callback URL",
@@ -1539,7 +1650,6 @@
       "profileSaved": "Profile saved",
       "emailChangeFailed": "Email change failed: {message}",
       "profileSavedEmailCheck": "Profile saved — check your email to confirm the address change",
-      
       "passwordTitle": "Password",
       "passwordDesc": "Use at least {min} characters. You will stay signed in on this device after changing it.",
       "currentPassword": "Current password",
@@ -1553,7 +1663,6 @@
       "currentPasswordIncorrect": "Current password is incorrect",
       "passwordUpdateFailed": "Password update failed: {message}",
       "passwordUpdated": "Password updated",
-      
       "sessionsTitle": "Active sessions",
       "sessionsDesc": "Sign out of every device where you're logged in — including this one. Useful if you lost a laptop or shared your password.",
       "signOutAll": "Sign out of all devices",
@@ -1600,7 +1709,7 @@
       "nameLabel": "Name",
       "namePlaceholder": "e.g. Zapier automation",
       "scopesLabel": "Scopes",
-      "scopesHint": "A key with no scopes can still call <code className=\"text-[11px]\">GET /api/v1/me</code> to verify it works.",
+      "scopesHint": "A key with no scopes can still call <code>GET /api/v1/me</code> to verify it works.",
       "cancel": "Cancel",
       "creating": "Creating…",
       "createKey": "Create key",
@@ -1629,7 +1738,7 @@
     },
     "aiConfig": {
       "title": "Agent setup",
-      "description": "Bring your own OpenAI or Anthropic key. wacrm calls the provider directly with your key — no per-seat AI fees, and your data stays yours. This powers AI-drafted replies in the inbox, the auto-reply bot, and the Playground.",
+      "description": "Bring your own OpenAI or Anthropic key. Conversa calls the provider directly with your key — no per-seat AI fees, and your data stays yours. This powers AI-drafted replies in the inbox, the auto-reply bot, and the Playground.",
       "adminOnlyConfig": "Only admins and owners can change the AI configuration.",
       "loadFailed": "Failed to load AI configuration",
       "providerAndKey": "Provider & key",
@@ -1693,6 +1802,233 @@
       "reindex": "Reindex",
       "reindexTooltip": "Re-embed all documents (e.g. after adding an embeddings key)",
       "loading": "Loading…"
+    }
+  },
+  "Companies": {
+    "common": {
+      "back": "Back",
+      "cancel": "Cancel",
+      "save": "Save",
+      "archive": "Archive",
+      "restore": "Restore",
+      "loading": "Loading...",
+      "notSet": "Not provided",
+      "unassigned": "Unassigned",
+      "statuses": {
+        "all": "All statuses",
+        "prospect": "Prospect",
+        "active_customer": "Active customer",
+        "at_risk": "At risk",
+        "inactive": "Inactive",
+        "reactivated": "Reactivated",
+        "archived": "Archived",
+        "pending": "pending",
+        "completed": "completed",
+        "cancelled": "cancelled",
+        "rescheduled": "rescheduled",
+        "open": "open",
+        "won": "won",
+        "lost": "lost"
+      }
+    },
+    "list": {
+      "title": "Companies",
+      "subtitle": "Consolidate contacts, opportunities, and follow-ups by company.",
+      "newCompany": "New company",
+      "searchPlaceholder": "Search by name, tax ID, segment, phone, or email",
+      "filters": {
+        "allOwners": "All owners",
+        "allSegments": "All segments",
+        "primaryContact": "Primary contact",
+        "withPrimary": "With primary",
+        "withoutPrimary": "Without primary",
+        "nextFollowUp": "Next follow-up",
+        "withNext": "With next",
+        "withoutNext": "Without next",
+        "active": "Active",
+        "archived": "Archived",
+        "all": "All",
+        "overdue": "Overdue"
+      },
+      "table": {
+        "company": "Company",
+        "status": "Status",
+        "primary": "Primary",
+        "owner": "Owner",
+        "contacts": "Contacts",
+        "deals": "Opportunities",
+        "nextAction": "Next action"
+      },
+      "loading": "Loading companies...",
+      "emptyTitle": "No companies found.",
+      "emptyDescription": "Adjust the filters or create the first company.",
+      "noSegment": "No segment",
+      "archivedSuffix": "Archived",
+      "pending": "Pending",
+      "openDeals": "{count} open",
+      "noNextAction": "No next action"
+    },
+    "form": {
+      "newTitle": "New company",
+      "editTitle": "Edit company",
+      "subtitle": "Keep the relational company record as the commercial source of truth.",
+      "sections": {
+        "identity": "Identity",
+        "channels": "Channels",
+        "address": "Address",
+        "notes": "Notes"
+      },
+      "fields": {
+        "tradeName": "Trade name",
+        "legalName": "Legal name",
+        "taxId": "Tax ID",
+        "commercialStatus": "Commercial status",
+        "segment": "Segment",
+        "owner": "Owner",
+        "primaryPhone": "Primary phone",
+        "primaryEmail": "Primary email",
+        "website": "Website",
+        "addressLine1": "Address",
+        "addressLine2": "Address line 2",
+        "city": "City",
+        "region": "State/region",
+        "postalCode": "Postal code",
+        "country": "Country"
+      },
+      "toasts": {
+        "notFound": "Company not found.",
+        "unauthenticated": "Unauthenticated user.",
+        "updated": "Company updated.",
+        "created": "Company created.",
+        "saveFailed": "Failed to save company.",
+        "archiveFailed": "Failed to update archive state.",
+        "archived": "Company archived.",
+        "restored": "Company restored."
+      }
+    },
+    "detail": {
+      "areaFallback": "Company area",
+      "archivedSuffix": "Archived",
+      "buttons": {
+        "contact": "Contact",
+        "deal": "Opportunity",
+        "followUp": "Follow-up",
+        "edit": "Edit",
+        "linkExisting": "Link existing",
+        "complete": "Complete",
+        "reschedule": "Reschedule"
+      },
+      "metrics": {
+        "contacts": "Contacts",
+        "openDeals": "Open opportunities",
+        "nextFollowUp": "Next follow-up",
+        "overdue": "Overdue",
+        "none": "None",
+        "needsAction": "Needs action",
+        "onTrack": "On track"
+      },
+      "panels": {
+        "overview": "Overview",
+        "contacts": "Contacts",
+        "deals": "Opportunities",
+        "followUps": "Follow-ups",
+        "activities": "Activities"
+      },
+      "info": {
+        "status": "Status",
+        "segment": "Segment",
+        "owner": "Owner",
+        "taxId": "Tax ID",
+        "phone": "Phone",
+        "email": "Email",
+        "website": "Website",
+        "address": "Address",
+        "createdAt": "Created at",
+        "notes": "Notes"
+      },
+      "contacts": {
+        "emptyTitle": "No linked contacts",
+        "emptyDescription": "Create or link a contact to make this company operational.",
+        "primarySuffix": "Primary",
+        "noRole": "No job title",
+        "undefinedRole": "role not set"
+      },
+      "deals": {
+        "emptyTitle": "No opportunities",
+        "emptyDescription": "Create an opportunity linked to this company when there is a real negotiation.",
+        "undefinedStage": "Stage not set"
+      },
+      "followUps": {
+        "emptyTitle": "No follow-ups",
+        "emptyDescription": "Schedule the next action for the company, a contact, or a deal.",
+        "companyScope": "Company scope",
+        "noNote": "No note"
+      },
+      "activities": {
+        "origin": "Origin",
+        "company": "Company",
+        "emptyTitle": "No activity yet",
+        "emptyDescription": "Activities appear when there are follow-ups or related commercial records."
+      },
+      "prompts": {
+        "result": "Result",
+        "cancelReason": "Cancellation reason",
+        "newDueDate": "New follow-up date"
+      },
+      "dialogs": {
+        "linkContactTitle": "Link existing contact",
+        "chooseContact": "Choose a contact",
+        "link": "Link",
+        "createDealTitle": "Create company opportunity",
+        "title": "Title",
+        "pipeline": "Pipeline",
+        "choosePipeline": "Choose a pipeline",
+        "stage": "Stage",
+        "chooseStage": "Choose a stage",
+        "contact": "Contact",
+        "noContact": "No contact",
+        "value": "Value",
+        "createDeal": "Create opportunity",
+        "createFollowUpTitle": "Create follow-up",
+        "dueAt": "Due date",
+        "deal": "Opportunity",
+        "noDeal": "No opportunity",
+        "owner": "Owner",
+        "type": "Type",
+        "channel": "Channel",
+        "priority": "Priority",
+        "note": "Note",
+        "createFollowUp": "Create follow-up"
+      },
+      "options": {
+        "call": "Call",
+        "meeting": "Meeting",
+        "proposal": "Proposal",
+        "reactivation": "Reactivation",
+        "other": "Other",
+        "phone": "Phone",
+        "internal": "Internal",
+        "low": "Low",
+        "normal": "Normal",
+        "high": "High",
+        "urgent": "Urgent"
+      },
+      "toasts": {
+        "notFound": "Company not found.",
+        "updateFailed": "Failed to update company.",
+        "archived": "Company archived.",
+        "restored": "Company restored.",
+        "contactWrongAccount": "The contact does not belong to this account.",
+        "linkContactFailed": "Failed to link contact.",
+        "unlinkContactFailed": "Failed to remove contact link.",
+        "primaryContactFailed": "Failed to set primary contact.",
+        "completeFollowUpFailed": "Failed to complete follow-up.",
+        "cancelFollowUpFailed": "Failed to cancel follow-up.",
+        "rescheduleFollowUpFailed": "Failed to reschedule follow-up.",
+        "createDealFailed": "Failed to create deal.",
+        "selectedRecordWrongAccount": "The selected record does not belong to this account.",
+        "createFollowUpFailed": "Failed to create follow-up."
+      }
     }
   }
 }

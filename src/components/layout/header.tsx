@@ -16,6 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { BrandLogo } from "@/components/brand/brand-logo";
 import { ModeToggle } from "@/components/layout/mode-toggle";
 
 const pageTitles: Record<string, string> = {
@@ -23,6 +24,7 @@ const pageTitles: Record<string, string> = {
   "/inbox": "inbox",
   "/notifications": "notifications",
   "/contacts": "contacts",
+  "/companies": "companies",
   "/pipelines": "pipelines",
   "/broadcasts": "broadcasts",
   "/automations": "automations",
@@ -68,6 +70,7 @@ export function Header({ onOpenSidebar }: HeaderProps) {
         >
           <Menu className="h-5 w-5" />
         </button>
+        <BrandLogo variant="symbol" className="h-10 w-10 lg:hidden" priority />
         <h1 className="truncate text-base font-semibold text-foreground sm:text-lg">
           {t(titleKey as string)}
         </h1>

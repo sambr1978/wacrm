@@ -14,7 +14,7 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
-import type { Deal, PipelineStage } from "@/types";
+import type { Deal, FollowUp, PipelineStage } from "@/types";
 import { DealCard } from "./deal-card";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -25,6 +25,7 @@ import { useTranslations } from "next-intl";
 interface PipelineBoardProps {
   stages: PipelineStage[];
   deals: Deal[];
+  followUps?: FollowUp[];
   onDealMoved: (dealId: string, newStageId: string) => void;
   onAddDeal: (stageId: string) => void;
   onEditDeal: (deal: Deal) => void;
@@ -33,6 +34,7 @@ interface PipelineBoardProps {
 export function PipelineBoard({
   stages,
   deals,
+  followUps = [],
   onDealMoved,
   onAddDeal,
   onEditDeal,
@@ -115,6 +117,7 @@ export function PipelineBoard({
               key={stage.id}
               stage={stage}
               deals={stageDeals}
+              followUps={followUps}
               totalValue={totalValue}
               currency={defaultCurrency}
               onAddDeal={onAddDeal}
@@ -133,7 +136,12 @@ export function PipelineBoard({
         {activeDeal ? (
           <div className="opacity-90">
             <DealCard
-              deal={activeDeal}
+              deal={{
+                ...activeDeal,
+                follow_ups: followUps.filter(
+                  (followUp) => followUp.deal_id === activeDeal.id,
+                ),
+              }}
               stage={
                 sortedStages.find((s) => s.id === activeDeal.stage_id) ?? null
               }
@@ -189,6 +197,7 @@ export function PipelineBoard({
 function StageColumn({
   stage,
   deals,
+  followUps,
   totalValue,
   currency,
   onAddDeal,
@@ -196,6 +205,7 @@ function StageColumn({
 }: {
   stage: PipelineStage;
   deals: Deal[];
+  followUps: FollowUp[];
   totalValue: number;
   currency: string;
   onAddDeal: (stageId: string) => void;
@@ -246,6 +256,7 @@ function StageColumn({
             <DraggableDealCard
               key={deal.id}
               deal={deal}
+              followUps={followUps}
               stage={stage}
               onEdit={onEditDeal}
             />
@@ -268,10 +279,12 @@ function StageColumn({
 
 function DraggableDealCard({
   deal,
+  followUps,
   stage,
   onEdit,
 }: {
   deal: Deal;
+  followUps: FollowUp[];
   stage: PipelineStage;
   onEdit: (deal: Deal) => void;
 }) {
@@ -286,7 +299,14 @@ function DraggableDealCard({
       {...attributes}
       style={{ opacity: isDragging ? 0.3 : 1, touchAction: "none" }}
     >
-      <DealCard deal={deal} stage={stage} onEdit={onEdit} />
+      <DealCard
+        deal={{
+          ...deal,
+          follow_ups: followUps.filter((followUp) => followUp.deal_id === deal.id),
+        }}
+        stage={stage}
+        onEdit={onEdit}
+      />
     </div>
   );
 }
